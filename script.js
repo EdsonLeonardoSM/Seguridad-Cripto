@@ -58,6 +58,7 @@ App.commonWords = [
 ];
 
 /* ALFABETO */
+// [XTZ-06]
 function setAlphabet(alphabet) {
     const validation = validateAlphabet(alphabet);
     if (!validation.valid) {
@@ -127,6 +128,7 @@ function hideAlphabetErrors() {
 }
 
 /* CIFRADO CESAR */
+// [XTZ-07]
 function caesarEncrypt(text, shift, alphabet) {
     const n = alphabet.length;
     if (n === 0) return { result: text, errors: ['Alfabeto vacio'], charsTransformed: 0 };
@@ -147,11 +149,13 @@ function caesarEncrypt(text, shift, alphabet) {
     return { result: transformed, charsTransformed, errors: [] };
 }
 
+// [XTZ-08]
 function caesarDecrypt(text, shift, alphabet) {
     return caesarEncrypt(text, -shift, alphabet);
 }
 
 /* CIFRADO ATBASH */
+// [XTZ-09]
 function atbashEncrypt(text, alphabet) {
     const n = alphabet.length;
     if (n === 0) return { result: text, errors: ['Alfabeto vacio'], charsTransformed: 0 };
@@ -170,6 +174,7 @@ function atbashEncrypt(text, alphabet) {
     return { result: transformed, charsTransformed, errors: [] };
 }
 
+// [XTZ-09]
 function atbashDecrypt(text, alphabet) {
     return atbashEncrypt(text, alphabet);
 }
@@ -194,6 +199,7 @@ function setShift(shift) {
     App.shift = shift;
 }
 
+// [XTZ-11]
 function normalizeShift(shift, alphabetLength) {
     if (alphabetLength === 0) return 0;
     let normalized = shift % alphabetLength;
@@ -202,6 +208,7 @@ function normalizeShift(shift, alphabetLength) {
 }
 
 /* ANALISIS DE FRECUENCIA (AL-KINDI) */
+// [XTZ-12]
 function calculateFrequencies(text, alphabet) {
     const freq = {};
     let total = 0;
@@ -218,6 +225,7 @@ function calculateFrequencies(text, alphabet) {
     return { freq, total };
 }
 
+// [XTZ-13]
 function chiSquared(observedFreq, expectedFreq, alphabet) {
     let sum = 0;
     for (const char of alphabet) {
@@ -233,6 +241,7 @@ function chiSquared(observedFreq, expectedFreq, alphabet) {
 }
 
 /* ANALISIS LINGUISTICO */
+// [XTZ-14]
 function countBigrams(text, bigrams) {
     let count = 0;
     const lower = text.toLowerCase();
@@ -243,6 +252,7 @@ function countBigrams(text, bigrams) {
     return count;
 }
 
+// [XTZ-14]
 function countTrigrams(text, trigrams) {
     let count = 0;
     const lower = text.toLowerCase();
@@ -253,6 +263,7 @@ function countTrigrams(text, trigrams) {
     return count;
 }
 
+// [XTZ-14]
 function countCommonWords(text, commonWords) {
     let count = 0;
     const lower = text.toLowerCase();
@@ -264,6 +275,7 @@ function countCommonWords(text, commonWords) {
     return count;
 }
 
+// [XTZ-15]
 function calculateLinguisticScore(text, alphabet) {
     const bigramScore = countBigrams(text, App.spanishBigrams);
     const trigramScore = countTrigrams(text, App.spanishTrigrams);
@@ -277,6 +289,7 @@ function calculateLinguisticScore(text, alphabet) {
 }
 
 /* PUNTUACION COMBINADA */
+// [XTZ-16]
 function combinedScore(candidate, alphabet) {
     const { freq: observedFreq } = calculateFrequencies(candidate.text, alphabet);
     const chiSq = chiSquared(observedFreq, App.spanishFreq, alphabet);
@@ -293,6 +306,7 @@ function combinedScore(candidate, alphabet) {
 }
 
 /* DESCRIFRADO AUTOMATICO */
+// [XTZ-17]
 function generateCesarCandidates(ciphertext, alphabet) {
     const candidates = [];
     const n = alphabet.length;
@@ -308,6 +322,7 @@ function generateCesarCandidates(ciphertext, alphabet) {
     return candidates;
 }
 
+// [XTZ-20]
 function generateAtbashCandidate(ciphertext, alphabet) {
     const decrypted = atbashDecrypt(ciphertext, alphabet);
     return {
@@ -318,6 +333,7 @@ function generateAtbashCandidate(ciphertext, alphabet) {
     };
 }
 
+// [XTZ-18]
 function detectAmbiguity(candidates) {
     if (candidates.length < 2) return { ambiguous: false, gap: 0 };
     const top2 = candidates.slice(0, 2);
@@ -333,6 +349,7 @@ function detectAmbiguity(candidates) {
     };
 }
 
+// [XTZ-19]
 function autoDecrypt(ciphertext, alphabet) {
     const candidates = [];
     const cesarCandidates = generateCesarCandidates(ciphertext, alphabet);
@@ -355,6 +372,7 @@ function autoDecrypt(ciphertext, alphabet) {
 }
 
 /* PROCESAMIENTO */
+// [XTZ-21]
 function processText() {
     const text = document.getElementById('inputText').value;
     const alphabet = App.alphabet;
@@ -465,6 +483,7 @@ function updateStatus() {
     }
 }
 
+// [XTZ-23]
 function getOperationMode() {
     const radios = document.getElementsByName('operationMode');
     for (const radio of radios) {
@@ -473,6 +492,7 @@ function getOperationMode() {
     return 'encrypt';
 }
 
+// [XTZ-24]
 function updateModeUI() {
     const mode = getOperationMode();
     const manualConfigCard = document.getElementById('manualConfigCard');
@@ -495,6 +515,7 @@ function updateModeUI() {
     App.operationMode = mode;
 }
 
+// [XTZ-25]
 function updateMethodUI() {
     const method = getSelectedMethod();
     document.getElementById('cesarOptions').classList.toggle('hidden', method !== 'cesar');
@@ -504,6 +525,7 @@ function updateMethodUI() {
 }
 
 /* PRUEBAS */
+// [XTZ-22]
 const TestEngine = {
     results: [],
     reset() { this.results = []; },
@@ -645,6 +667,7 @@ function showTestOutput(report) {
 }
 
 /* INICIALIZACION */
+// [XTZ-26]
 function init() {
     document.getElementById('alphabetInput').value = App.DEFAULT_ALPHABET;
     setAlphabet(App.DEFAULT_ALPHABET);

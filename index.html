@@ -5,13 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Sistema de cifrado César y Atbash con descifrado automático">
     <title>Sistema de Cifrado - Seguridad en Sistemas de Cómputo I</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
         <header>
+            <svg class="header-rotor" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <circle cx="24" cy="24" r="19" stroke-width="1.5"/>
+                <circle cx="24" cy="24" r="12" stroke-width="1.5"/>
+                <circle cx="24" cy="24" r="2" fill="currentColor" stroke="none" style="color: var(--brass-light);"/>
+                <line x1="24" y1="5" x2="24" y2="10" stroke-width="1.5"/>
+                <line x1="24" y1="38" x2="24" y2="43" stroke-width="1.5"/>
+                <line x1="5" y1="24" x2="10" y2="24" stroke-width="1.5"/>
+                <line x1="38" y1="24" x2="43" y2="24" stroke-width="1.5"/>
+            </svg>
             <h1>Sistema de Cifrado César y Atbash</h1>
-            <p>Seguridad en Sistemas de Cómputo I - Proyecto 1</p>
+            <p>Seguridad en Sistemas de Cómputo I — Proyecto 1</p>
         </header>
 
         <div class="status-bar">
@@ -148,18 +158,23 @@
                             Desplazamiento (shift)
                         </label>
                         <div class="shift-controls">
-                            <input type="number" 
-                                   id="shiftInput" 
-                                   value="3" 
-                                   min="0"
-                                   aria-describedby="shiftHint">
-                            <span id="shiftHint" class="input-hint">
-                                Posiciones a desplazar en el alfabeto
-                            </span>
+                            <div class="shift-dial" aria-hidden="true">
+                                <span id="shiftDialLabel">shift</span>
+                            </div>
+                            <div>
+                                <input type="number" 
+                                       id="shiftInput" 
+                                       value="3" 
+                                       min="0"
+                                       aria-describedby="shiftHint">
+                                <span id="shiftHint" class="input-hint">
+                                    Posiciones a desplazar en el alfabeto
+                                </span>
+                            </div>
                         </div>
                         <div class="shift-presets">
                             <button type="button" class="preset-btn" data-shift="1">+1</button>
-                            <button type="button" class="preset-btn" data-shift="3">+3</button>
+                            <button type="button" class="preset-btn active" data-shift="3">+3</button>
                             <button type="button" class="preset-btn" data-shift="5">+5</button>
                             <button type="button" class="preset-btn" data-shift="13">+13</button>
                             <button type="button" class="preset-btn" data-shift="21">+21</button>
@@ -200,9 +215,12 @@
                     <textarea id="inputText" 
                               placeholder="Ingresa el texto aquí..."
                               aria-describedby="inputHint"></textarea>
-                    <span class="input-hint" id="inputHint">
-                        Los caracteres fuera del alfabeto se preservan sin cambios.
-                    </span>
+                    <div class="field-footer">
+                        <span class="input-hint" id="inputHint">
+                            Los caracteres fuera del alfabeto se preservan sin cambios.
+                        </span>
+                        <span class="char-count" id="charCount">0 caracteres</span>
+                    </div>
                 </div>
 
                 <div class="btn-group">
@@ -219,6 +237,7 @@
                         Limpiar
                     </button>
                 </div>
+                <span class="input-hint" style="display:block; margin-top:0.6rem;">Atajo: Ctrl (o ⌘) + Enter procesa el texto desde el área de entrada.</span>
             </section>
 
             <section class="card" aria-labelledby="output-section-title">
@@ -234,68 +253,126 @@
                     <div class="result-box" id="outputText" role="status" aria-live="polite">
                         <em>El resultado aparecerá aquí...</em>
                     </div>
-                    <button type="button" class="btn btn-outline" id="copyBtn" style="margin-top: 0.5rem;">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184" />
-                        </svg>
-                        Copiar resultado
-                    </button>
+                    <div class="result-actions">
+                        <button type="button" class="btn btn-outline" id="copyBtn">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184" />
+                            </svg>
+                            Copiar resultado
+                        </button>
+                        <span class="copy-feedback" id="copyFeedback">Copiado a la cinta ✓</span>
+                    </div>
                 </div>
 
                 <div class="form-group" id="processInfoGroup">
                     <label>Información del proceso:</label>
-                    <div id="processInfo" style="font-size: 0.9rem; color: var(--color-text-secondary); line-height: 1.8;">
+                    <div id="processInfo">
                         Sin información disponible
                     </div>
                 </div>
             </section>
 
-            <section class="card test-section" aria-labelledby="test-section-title">
-                <h2 class="card-title" id="test-section-title">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23.693L5 14.5m14.8.8l1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0112 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5" />
+            <details class="test-section">
+                <summary class="test-toggle">
+                    <span>Pruebas del motor (opcional — verificación técnica)</span>
+                    <svg class="chevron" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
                     </svg>
-                    Pruebas del Motor
-                </h2>
-                <p class="info-text">Ejecuta pruebas para verificar el funcionamiento correcto de los algoritmos.</p>
+                </summary>
+                <div class="test-panel">
+                    <p class="info-text">Ejecuta pruebas para verificar el funcionamiento correcto de los algoritmos.</p>
 
-                <div class="test-buttons">
-                    <button type="button" class="test-btn" id="testCesarBasic">
-                        César básico
-                    </button>
-                    <button type="button" class="test-btn" id="testCesarWrap">
-                        César wrap
-                    </button>
-                    <button type="button" class="test-btn" id="testAtbashBasic">
-                        Atbash básico
-                    </button>
-                    <button type="button" class="test-btn" id="testRoundTrip">
-                        Round-trip
-                    </button>
-                    <button type="button" class="test-btn" id="testAutoCesar">
-                        Auto: César
-                    </button>
-                    <button type="button" class="test-btn" id="testAutoAtbash">
-                        Auto: Atbash
-                    </button>
-                    <button type="button" class="test-btn" id="testAutoEdge">
-                        Auto: Casos difíciles
-                    </button>
-                    <button type="button" class="test-btn" id="testAll">
-                        Todas
-                    </button>
+                    <div class="test-buttons">
+                        <button type="button" class="test-btn" id="testCesarBasic">
+                            César básico
+                        </button>
+                        <button type="button" class="test-btn" id="testCesarWrap">
+                            César wrap
+                        </button>
+                        <button type="button" class="test-btn" id="testAtbashBasic">
+                            Atbash básico
+                        </button>
+                        <button type="button" class="test-btn" id="testRoundTrip">
+                            Round-trip
+                        </button>
+                        <button type="button" class="test-btn" id="testAutoCesar">
+                            Auto: César
+                        </button>
+                        <button type="button" class="test-btn" id="testAutoAtbash">
+                            Auto: Atbash
+                        </button>
+                        <button type="button" class="test-btn" id="testAutoEdge">
+                            Auto: Casos difíciles
+                        </button>
+                        <button type="button" class="test-btn run-test" id="testAll">
+                            Todas
+                        </button>
+                    </div>
+
+                    <div class="test-output hidden" id="testOutput" aria-live="polite"></div>
                 </div>
-
-                <div class="test-output hidden" id="testOutput" aria-live="polite"></div>
-            </section>
+            </details>
         </main>
 
         <footer>
-            <p>Seguridad en Sistemas de Cómputo I - Proyecto 1</p>
-            <p>Motor criptográfico con descifrado automático - Fase 3</p>
+            <p>Seguridad en Sistemas de Cómputo I — Proyecto 1</p>
+            <p>Motor criptográfico con descifrado automático — Fase 3</p>
         </footer>
     </div>
 
     <script src="script.js"></script>
+    <script>
+        // Mejoras de comodidad — no interfieren con la lógica de script.js,
+        // solo añaden retroalimentación visual adicional.
+        (function () {
+            var inputText = document.getElementById('inputText');
+            var charCount = document.getElementById('charCount');
+            if (inputText && charCount) {
+                var updateCount = function () {
+                    var n = inputText.value.length;
+                    charCount.textContent = n === 1 ? '1 carácter' : n + ' caracteres';
+                };
+                inputText.addEventListener('input', updateCount);
+                updateCount();
+
+                // Atajo Ctrl/Cmd + Enter para procesar
+                inputText.addEventListener('keydown', function (e) {
+                    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                        var btn = document.getElementById('processBtn');
+                        if (btn) btn.click();
+                    }
+                });
+            }
+
+            // Confirmación visual al copiar
+            var copyBtn = document.getElementById('copyBtn');
+            var copyFeedback = document.getElementById('copyFeedback');
+            if (copyBtn && copyFeedback) {
+                copyBtn.addEventListener('click', function () {
+                    copyFeedback.classList.add('visible');
+                    clearTimeout(copyBtn._fadeTimer);
+                    copyBtn._fadeTimer = setTimeout(function () {
+                        copyFeedback.classList.remove('visible');
+                    }, 1800);
+                });
+            }
+
+            // Sincroniza el dial decorativo con el valor de desplazamiento actual
+            var shiftInput = document.getElementById('shiftInput');
+            var dialLabel = document.getElementById('shiftDialLabel');
+            if (shiftInput && dialLabel) {
+                var syncDial = function () {
+                    dialLabel.textContent = shiftInput.value || '0';
+                };
+                shiftInput.addEventListener('input', syncDial);
+                document.querySelectorAll('.preset-btn').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        setTimeout(syncDial, 0);
+                    });
+                });
+                syncDial();
+            }
+        })();
+    </script>
 </body>
 </html>
