@@ -4,326 +4,303 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Sistema de cifrado César y Atbash con descifrado automático">
-    <title>Sistema de Cifrado - Seguridad en Sistemas de Cómputo I</title>
+    <title>Laboratorio de Cifrado · Seguridad en Sistemas de Cómputo I</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <svg class="header-rotor" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <circle cx="24" cy="24" r="19" stroke-width="1.5"/>
-                <circle cx="24" cy="24" r="12" stroke-width="1.5"/>
-                <circle cx="24" cy="24" r="2" fill="currentColor" stroke="none" style="color: var(--brass-light);"/>
-                <line x1="24" y1="5" x2="24" y2="10" stroke-width="1.5"/>
-                <line x1="24" y1="38" x2="24" y2="43" stroke-width="1.5"/>
-                <line x1="5" y1="24" x2="10" y2="24" stroke-width="1.5"/>
-                <line x1="38" y1="24" x2="43" y2="24" stroke-width="1.5"/>
-            </svg>
-            <h1 data-text="Sistema de Cifrado César y Atbash">Sistema de Cifrado César y Atbash</h1>
-            <p>Seguridad en Sistemas de Cómputo I — Proyecto 1</p>
+    <div class="app">
+        <!-- ============================================
+             TOPBAR
+             ============================================ -->
+        <header class="topbar">
+            <div class="topbar-brand">
+                <div class="brand-mark" aria-hidden="true">
+                    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M16 3 L27 8 V16 C27 22 22 27.5 16 29 C10 27.5 5 22 5 16 V8 Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                        <path d="M11 16 L14.5 19.5 L21 12.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <h1>Laboratorio de Cifrado</h1>
+                    <p>Seguridad en Sistemas de Cómputo I · Proyecto 1</p>
+                </div>
+            </div>
+            <div class="topbar-status">
+                <div class="status-pill">
+                    <span class="status-dot active" id="statusDot"></span>
+                    <span id="statusText">Motor listo</span>
+                </div>
+                <div class="status-meta" id="alphabetLength">Alfabeto: 0 caracteres</div>
+                <div class="status-meta" id="modeText">Modo: Manual</div>
+            </div>
         </header>
 
-        <div class="status-bar">
-            <div class="status-item">
-                <span class="status-dot active" id="statusDot"></span>
-                <span id="statusText">Motor listo</span>
-            </div>
-            <div class="status-item">
-                <span id="alphabetLength">Alfabeto: 0 caracteres</span>
-            </div>
-            <div class="status-item">
-                <span id="modeText">Modo: Manual</span>
-            </div>
-        </div>
+        <!-- ============================================
+             WORKBENCH
+             ============================================ -->
+        <main class="workbench">
 
-        <main>
-            <section class="card" aria-labelledby="alphabet-section-title">
-                <h2 class="card-title" id="alphabet-section-title">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
-                    </svg>
-                    Conjunto de Caracteres
-                </h2>
+            <!-- ============================================
+                 PANEL IZQUIERDO: CONFIGURACIÓN
+                 ============================================ -->
+            <aside class="config-panel" aria-label="Configuración del cifrado">
 
-                <div class="form-group">
-                    <label for="alphabetInput">
-                        Definir alfabeto <span class="optional">(caracteres a usar para cifrado)</span>
-                    </label>
-                    <input type="text" 
-                           id="alphabetInput" 
+                <!-- Alfabeto -->
+                <section class="panel-block" aria-labelledby="alphabet-section-title">
+                    <div class="block-head">
+                        <span class="step-num">1</span>
+                        <h2 id="alphabet-section-title">Conjunto de caracteres</h2>
+                    </div>
+
+                    <input type="text"
+                           id="alphabetInput"
                            placeholder="abcdefghijklmnopqrstuvwxyz"
-                           aria-describedby="alphabetHint">
-                    <span class="input-hint" id="alphabetHint">
-                        Ingresa los caracteres en orden. Se usan para César (desplazamiento) y Atbash (espejo).
+                           aria-describedby="alphabetHint"
+                           spellcheck="false"
+                           autocomplete="off">
+                    <div class="alphabet-presets">
+                        <button type="button" class="chip-btn" id="setDefaultAlphabet" title="Alfabeto estándar a-z">a–z</button>
+                        <button type="button" class="chip-btn" id="setExtendedAlphabet" title="Alfabeto con ñ y acentos">a–z + ñ</button>
+                    </div>
+                    <span class="micro-hint" id="alphabetHint">
+                        Define el conjunto de caracteres. Se usa para César (desplazamiento) y Atbash (espejo).
                     </span>
                     <div class="validation-errors hidden" id="alphabetErrors">
                         <ul id="alphabetErrorList"></ul>
                     </div>
-                </div>
 
-                <div class="form-group">
-                    <button type="button" class="btn btn-secondary" id="setDefaultAlphabet">
-                        Usar alfabeto estándar (a-z)
-                    </button>
-                    <button type="button" class="btn btn-outline" id="setExtendedAlphabet">
-                        Alfabeto extendido (+ ñ, acentos)
-                    </button>
-                </div>
-
-                <div class="form-group">
-                    <label>Alfabeto activo:</label>
                     <div class="alphabet-display" id="alphabetDisplay">
                         <em>Sin definir</em>
                     </div>
                     <div class="alphabet-stats" id="alphabetStats"></div>
-                </div>
-            </section>
+                </section>
 
-            <section class="card mode-selector-card" aria-labelledby="mode-section-title">
-                <h2 class="card-title" id="mode-section-title">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
-                    </svg>
-                    Seleccionar Modo de Operación
-                </h2>
+                <!-- Modo de operación -->
+                <section class="panel-block" aria-labelledby="mode-section-title">
+                    <div class="block-head">
+                        <span class="step-num">2</span>
+                        <h2 id="mode-section-title">Modo y método</h2>
+                    </div>
 
-                <div class="mode-group" role="radiogroup" aria-label="Modo de operación">
-                    <label class="mode-option selected" id="modeEncrypt">
-                        <input type="radio" name="operationMode" value="encrypt" checked>
-                        <div class="mode-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-                            </svg>
-                        </div>
-                        <div class="mode-info">
-                            <strong>Cifrar</strong>
-                            <span>Aplicar cifrado con método y desplazamiento elegidos</span>
-                        </div>
-                    </label>
-
-                    <label class="mode-option" id="modeDecrypt">
-                        <input type="radio" name="operationMode" value="decrypt">
-                        <div class="mode-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5V6.75a4.5 4.5 0 119 0v3.75M3.75 21.75h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H3.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-                            </svg>
-                        </div>
-                        <div class="mode-info">
-                            <strong>Descifrar manualmente</strong>
-                            <span>Indicas el método y desplazamiento conocidos</span>
-                        </div>
-                    </label>
-
-                    <label class="mode-option" id="modeAuto">
-                        <input type="radio" name="operationMode" value="auto">
-                        <div class="mode-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23.693L5 14.5m14.8.8l1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0112 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5" />
-                            </svg>
-                        </div>
-                        <div class="mode-info">
-                            <strong>Descifrar automáticamente</strong>
-                            <span>Detecta el método y desplazamiento por sí solo</span>
-                        </div>
-                    </label>
-                </div>
-            </section>
-
-            <section class="card" id="manualConfigCard" aria-labelledby="cipher-section-title">
-                <h2 class="card-title" id="cipher-section-title">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" />
-                    </svg>
-                    Configuración Manual
-                </h2>
-
-                <div class="form-group">
-                    <label>Seleccionar método de cifrado:</label>
-                    <div class="radio-group" role="radiogroup" aria-label="Método de cifrado manual">
-                        <label class="radio-option selected" id="cesarOption">
-                            <input type="radio" name="cipherMethod" value="cesar" checked>
-                            <span>César</span>
+                    <div class="mode-pills" role="radiogroup" aria-label="Modo de operación">
+                        <label class="mode-pill mode-option selected" id="modeEncrypt" data-mode="encrypt">
+                            <input type="radio" name="operationMode" value="encrypt" checked>
+                            <span class="mode-pill-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="4" y="11" width="16" height="10" rx="2"/>
+                                    <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+                                </svg>
+                            </span>
+                            <span class="mode-pill-label">Cifrar</span>
                         </label>
-                        <label class="radio-option" id="atbashOption">
-                            <input type="radio" name="cipherMethod" value="atbash">
-                            <span>Atbash</span>
+                        <label class="mode-pill mode-option" id="modeDecrypt" data-mode="decrypt">
+                            <input type="radio" name="operationMode" value="decrypt">
+                            <span class="mode-pill-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="4" y="11" width="16" height="10" rx="2"/>
+                                    <path d="M8 11V7a4 4 0 0 1 7-2.7"/>
+                                </svg>
+                            </span>
+                            <span class="mode-pill-label">Descifrar</span>
+                        </label>
+                        <label class="mode-pill mode-option mode-pill-auto" id="modeAuto" data-mode="auto">
+                            <input type="radio" name="operationMode" value="auto">
+                            <span class="mode-pill-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/>
+                                    <circle cx="12" cy="12" r="3.5"/>
+                                </svg>
+                            </span>
+                            <span class="mode-pill-label">Automático</span>
                         </label>
                     </div>
-                </div>
 
-                <div class="cesar-options" id="cesarOptions">
-                    <div class="form-group">
-                        <label for="shiftInput">
-                            Desplazamiento (shift)
-                        </label>
-                        <div class="shift-controls">
-                            <div class="shift-dial" aria-hidden="true">
-                                <span id="shiftDialLabel">shift</span>
+                    <!-- Configuración manual (César / Atbash + shift) -->
+                    <div class="manual-config" id="manualConfigCard">
+                        <div class="method-tabs" role="radiogroup" aria-label="Método de cifrado manual">
+                            <label class="method-tab selected" id="cesarOption" data-method="cesar">
+                                <input type="radio" name="cipherMethod" value="cesar" checked>
+                                <span>César</span>
+                                <small>desplazamiento</small>
+                            </label>
+                            <label class="method-tab" id="atbashOption" data-method="atbash">
+                                <input type="radio" name="cipherMethod" value="atbash">
+                                <span>Atbash</span>
+                                <small>espejo</small>
+                            </label>
+                        </div>
+
+                        <!-- César: shift -->
+                        <div class="shift-stage" id="cesarOptions">
+                            <div class="shift-header">
+                                <label for="shiftInput" class="micro-label">Desplazamiento</label>
+                                <div class="shift-number">
+                                    <button type="button" class="shift-step" data-step="-1" aria-label="Disminuir desplazamiento">−</button>
+                                    <input type="number" id="shiftInput" value="3" min="0" step="1" aria-label="Valor de desplazamiento">
+                                    <button type="button" class="shift-step" data-step="1" aria-label="Aumentar desplazamiento">+</button>
+                                </div>
                             </div>
-                            <div>
-                                <input type="number" 
-                                       id="shiftInput" 
-                                       value="3" 
-                                       min="0"
-                                       aria-describedby="shiftHint">
-                                <span id="shiftHint" class="input-hint">
-                                    Posiciones a desplazar en el alfabeto
-                                </span>
+
+                            <div class="shift-presets">
+                                <button type="button" class="preset-btn" data-shift="1">+1</button>
+                                <button type="button" class="preset-btn active" data-shift="3">+3</button>
+                                <button type="button" class="preset-btn" data-shift="5">+5</button>
+                                <button type="button" class="preset-btn" data-shift="13">+13</button>
+                                <button type="button" class="preset-btn" data-shift="21">+21</button>
+                                <button type="button" class="preset-btn" data-shift="-3">−3</button>
+                            </div>
+
+                            <!-- Visualización César -->
+                            <div class="cipher-vis" id="cesarVis" aria-hidden="true">
+                                <div class="vis-row" id="cesarRowTop"></div>
+                                <div class="vis-arrows" id="cesarArrows"></div>
+                                <div class="vis-row" id="cesarRowBottom"></div>
                             </div>
                         </div>
-                        <div class="shift-presets">
-                            <button type="button" class="preset-btn" data-shift="1">+1</button>
-                            <button type="button" class="preset-btn active" data-shift="3">+3</button>
-                            <button type="button" class="preset-btn" data-shift="5">+5</button>
-                            <button type="button" class="preset-btn" data-shift="13">+13</button>
-                            <button type="button" class="preset-btn" data-shift="21">+21</button>
-                            <button type="button" class="preset-btn" data-shift="-3">-3</button>
+
+                        <!-- Atbash: visualización espejo -->
+                        <div class="atbash-stage hidden" id="atbashInfo">
+                            <div class="cipher-vis atbash-vis" id="atbashVis" aria-hidden="true">
+                                <div class="vis-row" id="atbashRowTop"></div>
+                                <div class="vis-arrows" id="atbashArrows"></div>
+                                <div class="vis-row" id="atbashRowBottom"></div>
+                            </div>
+                            <p class="micro-hint">Atbash invierte el alfabeto. No requiere desplazamiento.</p>
                         </div>
                     </div>
-                </div>
 
-                <div class="atbash-info hidden" id="atbashInfo">
-                    <p class="info-text">
-                        <strong>Atbash</strong> invierte el alfabeto: el primer carácter se mapea al último, 
-                        el segundo al penúltimo, y así sucesivamente.
-                        No requiere desplazamiento.
-                    </p>
-                </div>
+                    <!-- Aviso automático -->
+                    <div class="auto-banner hidden" id="autoNotice">
+                        <div class="auto-banner-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 2 L13.5 7 L19 7.5 L14.7 11 L16 16.5 L12 13.5 L8 16.5 L9.3 11 L5 7.5 L10.5 7 Z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <strong>Descifrado automático</strong>
+                            <p>El sistema probará todos los desplazamientos y aplicará análisis de frecuencia del español y patrones lingüísticos para detectar el método.</p>
+                        </div>
+                    </div>
+                </section>
+            </aside>
 
-                <div class="auto-notice hidden" id="autoNotice">
-                    <p class="info-text">
-                        <strong>Modo automático:</strong> El sistema probará todos los desplazamientos posibles 
-                        del alfabeto y aplicará análisis de frecuencia del español y patrones lingüísticos 
-                        para determinar el método y desplazamiento correctos.
-                    </p>
-                </div>
-            </section>
+            <!-- ============================================
+                 PANEL DERECHO: WORKSPACE
+                 ============================================ -->
+            <section class="workspace" aria-label="Entrada y resultado">
 
-            <section class="card" aria-labelledby="input-section-title">
-                <h2 class="card-title" id="input-section-title">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12" />
-                    </svg>
-                    Texto de Entrada
-                </h2>
-
-                <div class="form-group">
-                    <label for="inputText">
-                        Texto a procesar <span class="required">*</span>
-                    </label>
-                    <textarea id="inputText" 
-                              placeholder="Ingresa el texto aquí..."
-                              aria-describedby="inputHint"></textarea>
-                    <div class="field-footer">
-                        <span class="input-hint" id="inputHint">
-                            Los caracteres fuera del alfabeto se preservan sin cambios.
-                        </span>
+                <!-- Entrada -->
+                <div class="workspace-pane input-pane">
+                    <div class="pane-head">
+                        <span class="pane-tag">Entrada</span>
                         <span class="char-count" id="charCount">0 caracteres</span>
                     </div>
+                    <label for="inputText" class="visually-hidden">Texto a procesar</label>
+                    <textarea id="inputText"
+                              placeholder="Escribe o pega el texto a cifrar o descifrar..."
+                              aria-describedby="inputHint"
+                              spellcheck="false"
+                              autocomplete="off"></textarea>
+                    <div class="pane-foot">
+                        <span class="micro-hint" id="inputHint">Los caracteres fuera del alfabeto se preservan sin cambios.</span>
+                        <span class="micro-hint shortcut-hint">⌘/Ctrl + ↵ para procesar</span>
+                    </div>
                 </div>
 
-                <div class="btn-group">
-                    <button type="button" class="btn btn-primary" id="processBtn">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
-                        </svg>
-                        <span id="processBtnText">Procesar</span>
+                <!-- Conector central -->
+                <div class="process-rail" aria-hidden="true">
+                    <button type="button" class="process-btn" id="processBtn" aria-label="Procesar texto">
+                        <span class="process-btn-icon" id="processBtnIcon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M5 12h14M13 5l7 7-7 7"/>
+                            </svg>
+                        </span>
+                        <span class="process-btn-text" id="processBtnText">Procesar</span>
                     </button>
-                    <button type="button" class="btn btn-secondary" id="clearBtn">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                        Limpiar
-                    </button>
+                    <div class="rail-line"></div>
                 </div>
-                <span class="input-hint" style="display:block; margin-top:0.6rem;">Atajo: Ctrl (o ⌘) + Enter procesa el texto desde el área de entrada.</span>
-            </section>
 
-            <section class="card" aria-labelledby="output-section-title">
-                <h2 class="card-title" id="output-section-title">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Resultado
-                </h2>
-
-                <div class="form-group">
-                    <label for="outputText">Texto transformado:</label>
+                <!-- Resultado -->
+                <div class="workspace-pane output-pane" aria-labelledby="output-section-title">
+                    <div class="pane-head">
+                        <span class="pane-tag" id="output-section-title">Resultado</span>
+                        <span class="result-status" id="resultStatus" data-state="idle">En espera</span>
+                    </div>
                     <div class="result-box" id="outputText" role="status" aria-live="polite">
                         <em>El resultado aparecerá aquí...</em>
                     </div>
-                    <div class="result-actions">
-                        <button type="button" class="btn btn-outline" id="copyBtn">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184" />
+                    <div class="pane-foot output-foot">
+                        <button type="button" class="copy-btn" id="copyBtn" aria-label="Copiar resultado">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="9" y="9" width="11" height="11" rx="2"/>
+                                <path d="M5 15V5a2 2 0 0 1 2-2h10"/>
                             </svg>
-                            Copiar resultado
+                            <span id="copyBtnLabel">Copiar resultado</span>
                         </button>
-                        <span class="copy-feedback" id="copyFeedback">Copiado a la cinta ✓</span>
+                        <button type="button" class="ghost-btn" id="clearBtn" aria-label="Limpiar entrada y resultado">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M6 6l12 12M6 18L18 6"/>
+                            </svg>
+                            <span>Limpiar</span>
+                        </button>
+                        <span class="copy-feedback" id="copyFeedback">Copiado ✓</span>
                     </div>
                 </div>
 
-                <div class="form-group" id="processInfoGroup">
-                    <label>Información del proceso:</label>
-                    <div id="processInfo">
-                        Sin información disponible
+                <!-- Información del proceso -->
+                <div class="process-info" id="processInfoGroup">
+                    <div class="pane-head">
+                        <span class="pane-tag muted">Información del proceso</span>
                     </div>
+                    <div class="process-info-body" id="processInfo">Sin información disponible</div>
                 </div>
             </section>
-
-            <details class="test-section">
-                <summary class="test-toggle">
-                    <span>Pruebas del motor (opcional — verificación técnica)</span>
-                    <svg class="chevron" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                    </svg>
-                </summary>
-                <div class="test-panel">
-                    <p class="info-text">Ejecuta pruebas para verificar el funcionamiento correcto de los algoritmos.</p>
-
-                    <div class="test-buttons">
-                        <button type="button" class="test-btn" id="testCesarBasic">
-                            César básico
-                        </button>
-                        <button type="button" class="test-btn" id="testCesarWrap">
-                            César wrap
-                        </button>
-                        <button type="button" class="test-btn" id="testAtbashBasic">
-                            Atbash básico
-                        </button>
-                        <button type="button" class="test-btn" id="testRoundTrip">
-                            Round-trip
-                        </button>
-                        <button type="button" class="test-btn" id="testAutoCesar">
-                            Auto: César
-                        </button>
-                        <button type="button" class="test-btn" id="testAutoAtbash">
-                            Auto: Atbash
-                        </button>
-                        <button type="button" class="test-btn" id="testAutoEdge">
-                            Auto: Casos difíciles
-                        </button>
-                        <button type="button" class="test-btn run-test" id="testAll">
-                            Todas
-                        </button>
-                    </div>
-
-                    <div class="test-output hidden" id="testOutput" aria-live="polite"></div>
-                </div>
-            </details>
         </main>
 
-        <footer>
-            <p>Seguridad en Sistemas de Cómputo I — Proyecto 1</p>
-            <p>Motor criptográfico con descifrado automático — Fase 3</p>
+        <!-- ============================================
+             PRUEBAS (plegable, zona inferior)
+             ============================================ -->
+        <details class="test-section">
+            <summary class="test-toggle">
+                <span class="test-toggle-left">
+                    <svg class="test-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 2v6L4 18a2 2 0 0 0 1.7 3h12.6A2 2 0 0 0 20 18L15 8V2"/>
+                        <path d="M9 2h6"/>
+                        <path d="M7 15h10"/>
+                    </svg>
+                    <span>Pruebas del motor</span>
+                    <span class="test-tag">verificación técnica</span>
+                </span>
+                <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 9l6 6 6-6"/>
+                </svg>
+            </summary>
+            <div class="test-panel">
+                <p class="test-intro">Ejecuta pruebas para verificar el funcionamiento correcto de los algoritmos César, Atbash y el descifrado automático (Al-Kindi).</p>
+                <div class="test-buttons">
+                    <button type="button" class="test-btn" id="testCesarBasic">César básico</button>
+                    <button type="button" class="test-btn" id="testCesarWrap">César wrap</button>
+                    <button type="button" class="test-btn" id="testAtbashBasic">Atbash básico</button>
+                    <button type="button" class="test-btn" id="testRoundTrip">Round-trip</button>
+                    <button type="button" class="test-btn" id="testAutoCesar">Auto: César</button>
+                    <button type="button" class="test-btn" id="testAutoAtbash">Auto: Atbash</button>
+                    <button type="button" class="test-btn" id="testAutoEdge">Auto: casos difíciles</button>
+                    <button type="button" class="test-btn run-test" id="testAll">Ejecutar todas</button>
+                </div>
+                <div class="test-output hidden" id="testOutput" aria-live="polite"></div>
+            </div>
+        </details>
+
+        <footer class="app-footer">
+            <p>Seguridad en Sistemas de Cómputo I · Proyecto 1</p>
+            <p>Motor criptográfico con descifrado automático · Fase 3</p>
         </footer>
     </div>
 
     <script src="script.js"></script>
     <script>
-        // Mejoras de comodidad — no interfieren con la lógica de script.js,
-        // solo añaden retroalimentación visual adicional.
+        // Mejoras de comodidad — no interfieren con la lógica de script.js.
         (function () {
             var inputText = document.getElementById('inputText');
             var charCount = document.getElementById('charCount');
@@ -335,7 +312,6 @@
                 inputText.addEventListener('input', updateCount);
                 updateCount();
 
-                // Atajo Ctrl/Cmd + Enter para procesar
                 inputText.addEventListener('keydown', function (e) {
                     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
                         var btn = document.getElementById('processBtn');
@@ -344,7 +320,6 @@
                 });
             }
 
-            // Confirmación visual al copiar
             var copyBtn = document.getElementById('copyBtn');
             var copyFeedback = document.getElementById('copyFeedback');
             if (copyBtn && copyFeedback) {
@@ -357,20 +332,178 @@
                 });
             }
 
-            // Sincroniza el dial decorativo con el valor de desplazamiento actual
+            // ============================================
+            // Visualizaciones César / Atbash
+            // Lee el alfabeto que ya gestiona script.js y
+            // dibuja la representación visual del cifrado.
+            // No modifica ningún algoritmo.
+            // ============================================
+            var cesarVis = document.getElementById('cesarVis');
+            var cesarRowTop = document.getElementById('cesarRowTop');
+            var cesarRowBottom = document.getElementById('cesarRowBottom');
+            var cesarArrows = document.getElementById('cesarArrows');
+            var atbashVis = document.getElementById('atbashVis');
+            var atbashRowTop = document.getElementById('atbashRowTop');
+            var atbashRowBottom = document.getElementById('atbashRowBottom');
+            var atbashArrows = document.getElementById('atbashArrows');
             var shiftInput = document.getElementById('shiftInput');
-            var dialLabel = document.getElementById('shiftDialLabel');
-            if (shiftInput && dialLabel) {
-                var syncDial = function () {
-                    dialLabel.textContent = shiftInput.value || '0';
-                };
-                shiftInput.addEventListener('input', syncDial);
-                document.querySelectorAll('.preset-btn').forEach(function (btn) {
-                    btn.addEventListener('click', function () {
-                        setTimeout(syncDial, 0);
-                    });
+            var shiftStepBtns = document.querySelectorAll('.shift-step');
+
+            function getAlphabet() {
+                var input = document.getElementById('alphabetInput');
+                return (input && input.value) ? input.value : '';
+            }
+
+            function renderCesarVis() {
+                if (!cesarRowTop) return;
+                var alpha = getAlphabet();
+                if (!alpha) {
+                    cesarRowTop.innerHTML = '';
+                    cesarRowBottom.innerHTML = '';
+                    cesarArrows.innerHTML = '';
+                    return;
+                }
+                // Para alfabetos largos, mostrar solo los primeros N
+                var max = Math.min(alpha.length, 14);
+                var alphaSlice = alpha.slice(0, max);
+                var shift = parseInt(shiftInput.value, 10) || 0;
+                shift = ((shift % alphaSlice.length) + alphaSlice.length) % alphaSlice.length;
+
+                var top = alphaSlice.split('').map(function (c) {
+                    return '<span class="vis-cell">' + c + '</span>';
+                }).join('');
+                var arrows = alphaSlice.split('').map(function () {
+                    return '<span class="vis-arrow">↓</span>';
+                }).join('');
+                var mapped = alphaSlice.split('').map(function (_, i) {
+                    var idx = (i + shift) % alphaSlice.length;
+                    return alphaSlice[idx];
                 });
-                syncDial();
+                var bottom = mapped.map(function (c) {
+                    return '<span class="vis-cell vis-cell-result">' + c + '</span>';
+                }).join('');
+
+                cesarRowTop.innerHTML = top;
+                cesarArrows.innerHTML = arrows;
+                cesarRowBottom.innerHTML = bottom;
+            }
+
+            function renderAtbashVis() {
+                if (!atbashRowTop) return;
+                var alpha = getAlphabet();
+                if (!alpha) {
+                    atbashRowTop.innerHTML = '';
+                    atbashRowBottom.innerHTML = '';
+                    atbashArrows.innerHTML = '';
+                    return;
+                }
+                var max = Math.min(alpha.length, 14);
+                var alphaSlice = alpha.slice(0, max);
+                var n = alphaSlice.length;
+
+                var top = alphaSlice.split('').map(function (c) {
+                    return '<span class="vis-cell">' + c + '</span>';
+                }).join('');
+                var arrows = alphaSlice.split('').map(function () {
+                    return '<span class="vis-arrow">↓</span>';
+                }).join('');
+                var mirrored = alphaSlice.split('').map(function (_, i) {
+                    return alphaSlice[n - 1 - i];
+                });
+                var bottom = mirrored.map(function (c) {
+                    return '<span class="vis-cell vis-cell-result">' + c + '</span>';
+                }).join('');
+
+                atbashRowTop.innerHTML = top;
+                atbashArrows.innerHTML = arrows;
+                atbashRowBottom.innerHTML = bottom;
+            }
+
+            function renderAllVis() {
+                renderCesarVis();
+                renderAtbashVis();
+            }
+
+            if (shiftInput) {
+                shiftInput.addEventListener('input', renderCesarVis);
+            }
+            document.querySelectorAll('.preset-btn').forEach(function (btn) {
+                btn.addEventListener('click', function () { setTimeout(renderCesarVis, 0); });
+            });
+            shiftStepBtns.forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var cur = parseInt(shiftInput.value, 10) || 0;
+                    var step = parseInt(btn.dataset.step, 10) || 0;
+                    var next = cur + step;
+                    if (next < 0) next = 0;
+                    shiftInput.value = next;
+                    shiftInput.dispatchEvent(new Event('input', { bubbles: true }));
+                });
+            });
+            var alphabetInput = document.getElementById('alphabetInput');
+            if (alphabetInput) {
+                alphabetInput.addEventListener('input', renderAllVis);
+            }
+            document.getElementById('setDefaultAlphabet').addEventListener('click', function () { setTimeout(renderAllVis, 0); });
+            document.getElementById('setExtendedAlphabet').addEventListener('click', function () { setTimeout(renderAllVis, 0); });
+
+            // Render inicial
+            renderAllVis();
+
+            // ============================================
+            // Estado de procesamiento
+            // Solo refleja la ejecución real de processText()
+            // y el resultado que script.js deposita en #outputText.
+            // ============================================
+            var processBtn = document.getElementById('processBtn');
+            var resultStatus = document.getElementById('resultStatus');
+            var outputText = document.getElementById('outputText');
+            var resultBox = outputText;
+
+            function setStatus(state, label) {
+                if (!resultStatus) return;
+                resultStatus.dataset.state = state;
+                resultStatus.textContent = label;
+            }
+
+            if (processBtn) {
+                processBtn.addEventListener('click', function () {
+                    setStatus('processing', 'Procesando…');
+                    processBtn.classList.add('is-working');
+                    resultBox.classList.remove('has-result', 'has-error');
+                    resultBox.classList.add('is-processing');
+
+                    // Releer tras el ciclo de script.js
+                    setTimeout(function () {
+                        var text = outputText.textContent || '';
+                        processBtn.classList.remove('is-working');
+                        resultBox.classList.remove('is-processing');
+                        if (text.indexOf('Error:') === 0) {
+                            setStatus('error', 'Error');
+                            resultBox.classList.add('has-error');
+                        } else if (text && text !== 'El resultado aparecerá aquí...' && text !== '(vacio)') {
+                            setStatus('success', 'Resultado listo');
+                            resultBox.classList.add('has-result');
+                        } else {
+                            setStatus('idle', 'En espera');
+                        }
+                    }, 60);
+                });
+            }
+
+            if (outputText) {
+                var observer = new MutationObserver(function () {
+                    // El propio processBtn handler actualiza el estado;
+                    // aquí solo refrescamos la barra de estado del resultado
+                    // cuando cambia por copyResult() u otras causas.
+                    var text = outputText.textContent || '';
+                    if (text.indexOf('Error:') === 0) {
+                        setStatus('error', 'Error');
+                        outputText.classList.add('has-error');
+                        outputText.classList.remove('has-result');
+                    }
+                });
+                observer.observe(outputText, { childList: true, characterData: true, subtree: true });
             }
         })();
     </script>
