@@ -42,11 +42,11 @@ Este documento lista todos los identificadores `[XTZ-XX]` usados en el código f
 
 ### [XTZ-01] Estado global de la aplicación
 
-**Archivo:** `script.js`  
-**Línea aproximada:** 7  
+**Archivo:** `script.js`
+**Línea aproximada:** 7
 **Función:** `const App = {...}`
 
-**Qué hace:** Define el estado global de la aplicación incluyendo el alfabeto activo, el desplazamiento de César por defecto, y los conjuntos de alfabetos predefinidos (básico, extendido, ASCII).
+**Qué hace:** Define el estado global de la aplicación incluyendo el alfabeto activo, el desplazamiento de César por defecto, los conjuntos de alfabetos predefinidos (básico, extendido, ASCII alfanumérico, ASCII 7 bits) y las tablas estadísticas del español.
 
 **Relevancia para seguridad:** El alfabeto configurable permite al usuario definir exactamente qué caracteres serán procesados. Esto impide que caracteres fuera del conjunto sean accidentalmente modificados o que información sensible sea comprometida por transformaciones inesperadas.
 
@@ -54,20 +54,20 @@ Este documento lista todos los identificadores `[XTZ-XX]` usados en el código f
 
 ### [XTZ-02] Frecuencias de letras en español
 
-**Archivo:** `script.js`  
-**Línea aproximada:** 31  
+**Archivo:** `script.js`
+**Línea aproximada:** 40
 **Función:** `App.spanishFreq = {...}`
 
 **Qué hace:** Define las frecuencias relativas de cada letra en textos en español. Estos datos se usan para el análisis de frecuencia de Al-Kindi.
 
-**Relevancia para seguridad:** Permite determinar si un texto descifrado es español válido mediante chi-cuadrado. Un atacante que desconozca el desplazamiento correct no podrá producir texto que coincida con estas frecuencias.
+**Relevancia para seguridad:** Permite determinar si un texto descifrado es español válido mediante chi-cuadrado. Un atacante que desconozca el desplazamiento correcto no podrá producir texto que coincida con estas frecuencias.
 
 ---
 
 ### [XTZ-03] Bigramas en español
 
-**Archivo:** `script.js`  
-**Línea aproximada:** 40  
+**Archivo:** `script.js`
+**Línea aproximada:** 49
 **Función:** `App.spanishBigrams = {...}`
 
 **Qué hace:** Lista los bigramas (pares de letras) más comunes en español con sus frecuencias relativas.
@@ -78,8 +78,8 @@ Este documento lista todos los identificadores `[XTZ-XX]` usados en el código f
 
 ### [XTZ-04] Trigramas en español
 
-**Archivo:** `script.js`  
-**Línea aproximada:** 48  
+**Archivo:** `script.js`
+**Línea aproximada:** 57
 **Función:** `App.spanishTrigrams = {...}`
 
 **Qué hace:** Lista los trigramas (tripletes de letras) más comunes en español.
@@ -90,8 +90,8 @@ Este documento lista todos los identificadores `[XTZ-XX]` usados en el código f
 
 ### [XTZ-05] Palabras comunes en español
 
-**Archivo:** `script.js`  
-**Línea aproximada:** 54  
+**Archivo:** `script.js`
+**Línea aproximada:** 63
 **Función:** `App.commonWords = [...]`
 
 **Qué hace:** Lista artículos, preposiciones y palabras frecuentes en español.
@@ -102,11 +102,11 @@ Este documento lista todos los identificadores `[XTZ-XX]` usados en el código f
 
 ### [XTZ-06] Validación del alfabeto
 
-**Archivo:** `script.js`  
-**Línea aproximada:** 63  
+**Archivo:** `script.js`
+**Línea aproximada:** 71
 **Función:** `setAlphabet()`
 
-**Qué hace:** Valida que el alfabeto proporcionado no esté vacío, tenga al menos 2 caracteres, y no contenga duplicados.
+**Qué hace:** Valida que el alfabeto proporcionado no esté vacío, tenga al menos 2 caracteres, y no contenga duplicados. Muestra errores descriptivos si la validación falla.
 
 **Relevancia para seguridad:** Un alfabeto inválido podría causar errores en el cifrado o revelar información sobre el sistema. La validación previene fallos inesperados.
 
@@ -114,11 +114,11 @@ Este documento lista todos los identificadores `[XTZ-XX]` usados en el código f
 
 ### [XTZ-07] Cifrado César
 
-**Archivo:** `script.js`  
-**Línea aproximada:** 133  
+**Archivo:** `script.js`
+**Línea aproximada:** 141
 **Función:** `caesarEncrypt(text, shift, alphabet)`
 
-**Qué hace:** Implementa el cifrado César mediante desplazamiento modular: `C(cᵢ) = c_{(i+k) mod n}`.
+**Qué hace:** Implementa el cifrado César mediante desplazamiento modular: `C(c_i) = c_{(i + k) mod n}`. Itera por cada carácter, busca su índice en el alfabeto, aplica el desplazamiento módulo n, y preserva caracteres fuera del alfabeto.
 
 **Relevancia para seguridad:** Este es el algoritmo central del proyecto. Un atacante que no conozca el desplazamiento no puede descifrar el mensaje sin análisis estadístico.
 
@@ -126,35 +126,35 @@ Este documento lista todos los identificadores `[XTZ-XX]` usados en el código f
 
 ### [XTZ-08] Descifrado César
 
-**Archivo:** `script.js`  
-**Línea aproximada:** 155  
+**Archivo:** `script.js`
+**Línea aproximada:** 162
 **Función:** `caesarDecrypt(text, shift, alphabet)`
 
-**Qué hace:** Descifra texto cifrado con César usando el desplazamiento inverso: `shift = n - k`.
+**Qué hace:** Descifra texto cifrado con César usando el desplazamiento inverso (`caesarEncrypt` con `-shift`).
 
-**Relevancia para seguridad:** Permite al receptor recuperar el mensaje original si conoce el desplazamiento.
+**Relevancia para seguridad:** Permite al receptor recuperar el mensaje original si conoce el desplazamiento. La implementación reutiliza `caesarEncrypt` para evitar código duplicado.
 
 ---
 
 ### [XTZ-09] Cifrado/Descifrado Atbash
 
-**Archivo:** `script.js`  
-**Línea aproximada:** 160 y 181  
+**Archivo:** `script.js`
+**Línea aproximada:** 168, 187
 **Funciones:** `atbashEncrypt()` y `atbashDecrypt()`
 
-**Qué hace:** Implementa Atbash mediante inversión del alfabeto: `A(cᵢ) = c_{n-1-i}`. El descifrado usa la misma operación por simetría.
+**Qué hace:** Implementa Atbash mediante inversión del alfabeto: `A(c_i) = c_{n-1-i}`. El descifrado usa la misma operación por simetría (involutiva).
 
-**Relevancia para seguridad:** Atbash no requiere clave, pero el sistema debe poder detectarlo automáticamente entre múltiples candidatos.
+**Relevancia para seguridad:** Atbash no requiere clave, pero el sistema debe poder detectarlo automáticamente entre múltiples candidatos en el modo automático.
 
 ---
 
 ### [XTZ-11] Normalización del desplazamiento
 
-**Archivo:** `script.js`  
-**Línea aproximada:** 204  
+**Archivo:** `script.js`
+**Línea aproximada:** 212
 **Función:** `normalizeShift(shift, alphabetLength)`
 
-**Qué hace:** Normaliza el desplazamiento al rango válido `[0, n)` usando módulo positivo.
+**Qué hace:** Normaliza el desplazamiento al rango válido `[0, n)` usando módulo positivo. Maneja desplazamientos negativos correctamente.
 
 **Relevancia para seguridad:** Previene errores de índice que podrían causar excepciones o comportamiento inesperado.
 
@@ -162,11 +162,11 @@ Este documento lista todos los identificadores `[XTZ-XX]` usados en el código f
 
 ### [XTZ-12] Análisis de frecuencia
 
-**Archivo:** `script.js`  
-**Línea aproximada:** 212  
+**Archivo:** `script.js`
+**Línea aproximada:** 221
 **Función:** `calculateFrequencies(text, alphabet)`
 
-**Qué hace:** Calcula las frecuencias relativas de cada carácter en el texto observado.
+**Qué hace:** Calcula las frecuencias relativas de cada carácter del alfabeto presente en el texto. Retorna un objeto `{freq, total}` donde `freq` es un mapa carácter → frecuencia relativa.
 
 **Relevancia para seguridad:** Base del método de Al-Kindi para determinar si un texto descifrado es español válido.
 
@@ -174,11 +174,11 @@ Este documento lista todos los identificadores `[XTZ-XX]` usados en el código f
 
 ### [XTZ-13] Distancia Chi-cuadrado
 
-**Archivo:** `script.js`  
-**Línea aproximada:** 230  
+**Archivo:** `script.js`
+**Línea aproximada:** 238
 **Función:** `chiSquared(observedFreq, expectedFreq, alphabet)`
 
-**Qué hace:** Calcula χ² = Σ[(f_obs - f_exp)² / f_exp] para comparar distribuciones.
+**Qué hace:** Calcula χ² = Σ[(f_obs - f_exp)² / f_exp] para comparar distribuciones. Retorna la suma total; valores menores indican mayor similitud con la distribución esperada.
 
 **Relevancia para seguridad:** Cuanto menor χ², mayor la similitud entre el texto descifrado y español válido.
 
@@ -186,23 +186,23 @@ Este documento lista todos los identificadores `[XTZ-XX]` usados en el código f
 
 ### [XTZ-14] Análisis lingüístico: bigramas
 
-**Archivo:** `script.js`  
-**Línea aproximada:** 245  
-**Función:** `countBigrams(text, bigrams)`
+**Archivo:** `script.js`
+**Línea aproximada:** 254, 265, 276
+**Funciones:** `countBigrams()`, `countTrigrams()`, `countCommonWords()`
 
-**Qué hace:** Cuenta bigramas válidos en el texto candidato.
+**Qué hace:** Cuenta coincidencias de bigramas, trigramas y palabras frecuentes del español en el texto candidato. `countBigrams` y `countTrigrams` buscan subcadenas en los mapas estadísticos; `countCommonWords` usa expresiones regulares con límites de palabra (`\b`).
 
-**Relevancia para seguridad:** Mejora la puntuación de candidatos que forman palabras coherentes.
+**Relevancia para seguridad:** Mejora la puntuación de candidatos que forman palabras coherentes en español.
 
 ---
 
 ### [XTZ-15] Puntuación lingüística
 
-**Archivo:** `script.js`  
-**Línea aproximada:** 280  
+**Archivo:** `script.js`
+**Línea aproximada:** 288
 **Función:** `calculateLinguisticScore(text, alphabet)`
 
-**Qué hace:** Combina análisis de bigramas, trigramas y palabras comunes en un score ponderado.
+**Qué hace:** Combina análisis de bigramas, trigramas y palabras comunes en un score ponderado: `total = 0.3 × bigramScore + 0.2 × trigramScore + 0.5 × wordScore`.
 
 **Relevancia para seguridad:** Permite seleccionar automáticamente el mejor candidato sin intervención humana.
 
@@ -210,23 +210,23 @@ Este documento lista todos los identificadores `[XTZ-XX]` usados en el código f
 
 ### [XTZ-16] Puntuación combinada
 
-**Archivo:** `script.js`  
-**Línea aproximada:** 293  
+**Archivo:** `script.js`
+**Línea aproximada:** 302
 **Función:** `combinedScore(candidate, alphabet)`
 
-**Qué hace:** Combina puntuación de frecuencia (χ²) y puntuación lingüística en un score único.
+**Qué hace:** Combina puntuación de frecuencia (χ²) y puntuación lingüística en un score único: `combined = 0.4 × freqScore + 0.6 × normalizedLing`, donde `freqScore = 1 / (1 + χ²)` y `normalizedLing = min(lingScore.total / 10, 1)`.
 
-**Relevancia para seguridad:** Score combinado = 0.4 × freqScore + 0.6 × lingScore. Balancea ambos métodos para máxima precisión.
+**Relevancia para seguridad:** Balancea ambos métodos para máxima precisión en la selección del candidato.
 
 ---
 
 ### [XTZ-17] Candidatos César automático
 
-**Archivo:** `script.js`  
-**Línea aproximada:** 309  
+**Archivo:** `script.js`
+**Línea aproximada:** 319
 **Función:** `generateCesarCandidates(ciphertext, alphabet)`
 
-**Qué hace:** Genera un candidato para cada posible desplazamiento de César (0 a n-1).
+**Qué hace:** Genera un candidato para cada posible desplazamiento de César (0 a n-1). Usa `caesarDecrypt` con cada desplazamiento.
 
 **Relevancia para seguridad:** Permite probar todas las claves posibles sin intervención del usuario.
 
@@ -234,11 +234,11 @@ Este documento lista todos los identificadores `[XTZ-XX]` usados en el código f
 
 ### [XTZ-18] Detección de ambigüedad
 
-**Archivo:** `script.js`  
-**Línea aproximada:** 338  
+**Archivo:** `script.js`
+**Línea aproximada:** 346
 **Función:** `detectAmbiguity(candidates)`
 
-**Qué hace:** Determina si los dos mejores candidatos tienen puntuaciones demasiado similares (gap < 5%).
+**Qué hace:** Determina si los dos mejores candidatos tienen puntuaciones similares calculando `relativeGap = gap / avgScore`. Si `relativeGap < 0.05` (5%), se marca como ambiguo.
 
 **Relevancia para seguridad:** Advierte al usuario cuando no hay suficiente evidencia para determinar la solución correcta.
 
@@ -246,11 +246,11 @@ Este documento lista todos los identificadores `[XTZ-XX]` usados en el código f
 
 ### [XTZ-19] Descifrado automático
 
-**Archivo:** `script.js`  
-**Línea aproximada:** 354  
+**Archivo:** `script.js`
+**Línea aproximada:** 362
 **Función:** `autoDecrypt(ciphertext, alphabet)`
 
-**Qué hace:** Orchestration que genera candidatos César y Atbash, los puntúa, y selecciona el mejor.
+**Qué hace:** Orquestación completa del descifrado automático: genera candidatos César, genera candidato Atbash, puntúa todos con `combinedScore`, ordena por score descendente, detecta ambigüedad y retorna el ganador.
 
 **Relevancia para seguridad:** Implementa el requisito de "mostrar únicamente la línea descifrada correcta sin depender de que el usuario elija manualmente entre resultados".
 
@@ -258,11 +258,11 @@ Este documento lista todos los identificadores `[XTZ-XX]` usados en el código f
 
 ### [XTZ-20] Candidato Atbash
 
-**Archivo:** `script.js`  
-**Línea aproximada:** 327  
+**Archivo:** `script.js`
+**Línea aproximada:** 335
 **Función:** `generateAtbashCandidate(ciphertext, alphabet)`
 
-**Qué hace:** Genera el único candidato válido para Atbash.
+**Qué hace:** Genera el único candidato válido para Atbash usando `atbashDecrypt`. El desplazamiento es `null` porque Atbash no usa clave numérica.
 
 **Relevancia para seguridad:** Permite comparar Atbash contra César para determinar cuál método produjo el texto cifrado.
 
@@ -270,11 +270,11 @@ Este documento lista todos los identificadores `[XTZ-XX]` usados en el código f
 
 ### [XTZ-21] Procesamiento principal
 
-**Archivo:** `script.js`  
-**Línea aproximada:** 378  
+**Archivo:** `script.js`
+**Línea aproximada:** 385
 **Función:** `processText()`
 
-**Qué hace:** Dispatch principal que routea a cifrar, descifrar manual, o descifrar automático según el modo seleccionado.
+**Qué hace:** Dispatch principal que routea a cifrar (modo encrypt), descifrar manual (modo decrypt) o descifrado automático (modo auto) según el modo seleccionado. Muestra resultado o información del proceso.
 
 **Relevancia para seguridad:** Punto de entrada para toda transformación de texto.
 
@@ -282,11 +282,11 @@ Este documento lista todos los identificadores `[XTZ-XX]` usados en el código f
 
 ### [XTZ-22] Motor de pruebas
 
-**Archivo:** `script.js`  
-**Línea aproximada:** 527  
+**Archivo:** `script.js`
+**Línea aproximada:** 538
 **Constante:** `const TestEngine = {...}`
 
-**Qué hace:** Framework de pruebas integrado con assertions y reporte.
+**Qué hace:** Framework de pruebas integrado con assertions y reporte. Contiene métodos `reset()`, `log()`, `assert()`, `assertEq()` y `getReport()`. Se usa para verificar correctitud de algoritmos directamente desde la interfaz.
 
 **Relevancia para seguridad:** Permite verificar que los algoritmos funcionan correctamente antes de confiar en ellos.
 
@@ -294,23 +294,23 @@ Este documento lista todos los identificadores `[XTZ-XX]` usados en el código f
 
 ### [XTZ-23] Obtener modo de operación
 
-**Archivo:** `script.js`  
-**Línea aproximada:** 489  
+**Archivo:** `script.js`
+**Línea aproximada:** 496
 **Función:** `getOperationMode()`
 
-**Qué hace:** Lee el radio button seleccionado (encrypt/decrypt/auto).
+**Qué hace:** Lee el radio button seleccionado (encrypt/decrypt/auto). Retorna el valor del modo de operación.
 
-**Relevancia para seguridad:** Determina el flujo de procesamiento.
+**Relevancia para seguridad:** Determina el flujo de procesamiento (cifrar, descifrar o automático).
 
 ---
 
 ### [XTZ-24] Actualizar UI por modo
 
-**Archivo:** `script.js`  
-**Línea aproximada:** 497  
+**Archivo:** `script.js`
+**Línea aproximada:** 505
 **Función:** `updateModeUI()`
 
-**Qué hace:** Actualiza la interfaz según el modo de operación seleccionado.
+**Qué hace:** Actualiza la interfaz según el modo de operación seleccionado. Muestra/oculta el panel de configuración manual, el banner automático, y ajusta el texto del botón de procesar.
 
 **Relevancia para seguridad:** Mantiene coherencia entre estado interno y UI.
 
@@ -318,11 +318,11 @@ Este documento lista todos los identificadores `[XTZ-XX]` usados en el código f
 
 ### [XTZ-25] Actualizar UI por método
 
-**Archivo:** `script.js`  
-**Línea aproximada:** 520  
+**Archivo:** `script.js`
+**Línea aproximada:** 528
 **Función:** `updateMethodUI()`
 
-**Qué hace:** Muestra/oculta opciones de César o Atbash según selección.
+**Qué hace:** Muestra/oculta opciones de César o Atbash según selección del método. Actualiza las pestañas de método para reflejar el estado actual.
 
 **Relevancia para seguridad:** Solo presenta opciones válidas para el método elegido.
 
@@ -330,13 +330,21 @@ Este documento lista todos los identificadores `[XTZ-XX]` usados en el código f
 
 ### [XTZ-26] Inicialización
 
-**Archivo:** `script.js`  
-**Línea aproximada:** 670  
+**Archivo:** `script.js`
+**Línea aproximada:** 680
 **Función:** `init()`
 
-**Qué hace:** Configura event listeners, alfabeto por defecto, y estado inicial.
+**Qué hace:** Configura event listeners para todos los controles de la interfaz (alfabeto, modo, método, shift, procesar, limpiar, copiar, pruebas). Establece el alfabeto por defecto y el estado inicial de la aplicación.
 
 **Relevancia para seguridad:** Asegura que la aplicación inicia en un estado válido y seguro.
+
+---
+
+## Notas sobre el espacio XTZ
+
+- Los identificadores van de [XTZ-01] a [XTZ-26], saltando el [XTZ-10] que no está asignado en el código.
+- [XTZ-09] se usa tanto para cifrado como descifrado Atbash porque la operación es simétrica (la misma función sirve para ambos).
+- [XTZ-14] se usa tres veces: para `countBigrams`, `countTrigrams` y `countCommonWords` porque forman parte del mismo módulo de análisis lingüístico.
 
 ---
 

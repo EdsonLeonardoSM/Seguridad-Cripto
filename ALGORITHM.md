@@ -15,43 +15,16 @@
 
 ## 1. Conjunto de Caracteres Configurable
 
-### Definición Formal
+El sistema soporta un conjunto de caracteres definido por el usuario, con los siguientes alfabetos predefinidos:
 
-Sea **Σ** un conjunto finito de caracteres definido por el usuario:
+| Alfabeto | Descripción | Cardinalidad |
+|----------|-------------|--------------|
+| Básico | Letras minúsculas latinas a–z | 26 |
+| Extendido | Letras latinas con acentos y ñ | 33 |
+| ASCII alfanumérico | a–z, A–Z, 0–9 | 62 |
+| ASCII 7 bits | Caracteres estándar 0–127 | 128 |
 
-```
-Σ = {c₀, c₁, c₂, ..., c_{n-1}}
-```
-
-donde:
-- **n** = |Σ| es la cardinalidad del conjunto (longitud)
-- **cᵢ** = carácter en la posición i (0-indexed)
-
-### Ejemplo
-
-Para el alfabeto latino estándar:
-
-```
-Σ = {'a', 'b', 'c', ..., 'z'}
-n = 26
-```
-
-### Propiedades
-
-1. **Orden**: Los caracteres tienen un orden definido por su posición en Σ
-2. **Mapeo índice**: `index(c) → i` donde `0 ≤ i < n`
-3. **Mapeo inverso**: `at(i) → cᵢ` donde `0 ≤ i < n`
-4. **Complemento**: `complement(i) = n - 1 - i` (para Atbash)
-
-### Manejo de Caracteres Fuera del Conjunto
-
-Para cualquier carácter `x` que no pertenezca a Σ:
-
-```
-x ∉ Σ ⟹ x se preserva sin modificación
-```
-
-Esto permite que símbolos, espacios, y puntuación se mantengan intactos durante la transformación.
+Los alfabetos están disponibles como constantes en `script.js` bajo `App.PRESET_ALPHABETS`.
 
 ---
 
@@ -112,7 +85,7 @@ Para Σ = {'a', 'b', 'c', 'd', 'e'} y k = 2:
 ### Propiedades
 
 1. **Determinista**: Mismo texto + misma clave = mismo resultado
-2. **Simétrico para k fijo**: C_k(C_k(x)) = x (descifrado es cifrado con desplazamiento n-k)
+2. **Simétrico para k fijo**: C_k(C_{-k}(x)) = x (descifrar con -k invierte el cifrado con k)
 3. **Espacio de claves**: n posibles desplazamientos (0 a n-1)
 4. **Complejidad temporal**: O(m) donde m = longitud del texto
 
@@ -222,9 +195,9 @@ Esta diferencia permite distinguir entre ambos métodos.
 ### Aplicación al Descifrado Automático
 
 1. **Calcular frecuencias observadas** en el texto cifrado
-2. **Generar candidatos** para César (cada posible desplazamiento)
-3. **Evaluar cada candidato** usando chi-cuadrado contra distribución esperada
-4. **Seleccionar candidato** con menor diferencia
+2. **Generar candidatos** para César (cada posible desplazamiento) y Atbash (único candidato)
+3. **Evaluar cada candidato** con la puntuación combinada (`combinedScore`)
+4. **Seleccionar el candidato** con mayor puntuación combinada
 
 ---
 
@@ -266,10 +239,9 @@ Para Σ = {'a', 'b', 'c'}:
 
 ```
 Para cada desplazamiento k (0 a n-1):
-    1. Calcular χ² entre f_obs y f_exp desplazada
-    2. Seleccionar k con mínimo χ²
-    
-k_óptimo = argmin_k (χ²(k))
+    1. Generar el candidato descifrando con k
+    2. Calcular su puntuación combinada (que incluye χ²)
+    3. Seleccionar el candidato con mayor puntuación combinada
 ```
 
 ---
@@ -304,7 +276,7 @@ La función `evaluar_calidad` usa el sistema de puntuación descrito en la sigui
 
 ### Selección Inicial
 
-Para textos cortos (< 50 caracteres), se pueden reducir los candidatos a los 10 mejores para cada método antes de la evaluación final.
+Todos los candidatos (n de César + 1 de Atbash) se generan y puntúan completos; no se reduce la lista para textos cortos.
 
 ---
 
@@ -358,29 +330,13 @@ score_bigramas = (bigramas_válidos / total_bigramas) × 100
 score_trigramas = (trigramas_válidos / total_trigramas) × 100
 ```
 
-### D. Bonus por Longitud
+### D. Fórmula Final
 
 ```
-si longitud > 100:
-    bonus = 0.1
-sino si longitud > 50:
-    bonus = 0.05
-sino:
-    bonus = 0
+score_total = score_final
 ```
 
-### E. Penalización por Caracteres Inválidos
-
-```
-si contiene_caracteres_invalidos:
-    penalty = 0.2
-```
-
-### Fórmula Final
-
-```
-score_total = score_final + bonus - penalty
-```
+La normalización se aplica dentro de `combinedScore()` dividiendo `lingScore.total` entre 10 y limitando a 1 antes de combinar con `freqScore`.
 
 ---
 
@@ -388,31 +344,11 @@ score_total = score_final + bonus - penalty
 
 ### Algoritmo de Selección
 
-```
-función seleccionar_resultado(candidatos_Cesar, candidato_Atbash):
-    
-    # Encontrar mejor candidato César
-    mejor_Cesar = max(candidatos_Cesar, key=lambda c: c.score)
-    
-    # Asignar peso adicional a César si hay many candidatos cerca
-    if count_close_scores(candidatos_Cesar, mejor_Cesar.score, threshold=0.05) > 3:
-        # César tiene alta confianza
-        return mejor_Cesar
-    
-    # Si Atbash tiene score comparable
-    if abs(mejor_Cesar.score - candidato_Atbash.score) < threshold:
-        # Usar chi-cuadrado para desempate
-        if candidato_Atbash.chi_squared < mejor_Cesar.chi_squared:
-            return candidato_Atbash
-        else:
-            return mejor_Cesar
-    
-    # Seleccionar el de mayor score
-    if mejor_Cesar.score >= candidato_Atbash.score:
-        return mejor_Cesar
-    else:
-        return candidato_Atbash
-```
+1. Se generan todos los candidatos: n desplazamientos de César (0 a n-1) + 1 candidato Atbash.
+2. Cada candidato recibe un `combinedScore`.
+3. Se ordenan todos los candidatos por `combinedScore` descendente.
+4. El candidato en la posición 0 es el ganador.
+5. Si hay menos de 2 candidatos, no se evalúa ambigüedad.
 
 ### Criterio de Terminación
 
@@ -427,24 +363,7 @@ mostrar(f"Desplazamiento: {resultado.parámetros}")
 
 ### Manejo de Textos Cortos
 
-Para textos con menos de 10 caracteres, el análisis estadístico es menos confiable:
-
-```
-si longitud < 10:
-    # Usar heurísticas adicionales
-    # 1. Verificar si todas las letras son del conjunto
-    # 2. Verificar patrones comunes
-    # 3. Si hay ambigüedad, mostrar ambos candidatos con advertencia
-```
-
-### Manejo de Textos Muy Largos
-
-```
-si longitud > 1000:
-    # Dividir en bloques para análisis
-    # Analizar cada bloque independientemente
-    # Combinar resultados usando voting
-```
+El sistema no aplica heurísticas adicionales para textos cortos. El análisis estadístico (chi-cuadrado + bigramas/trigramas/palabras) se aplica igualmente a todos los textos. Para textos muy cortos la precisión puede ser menor y el sistema puede reportar ambigüedad.
 
 ---
 

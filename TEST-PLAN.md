@@ -18,7 +18,7 @@
 
 | Tipo | Objetivo | Herramienta | Ubicación |
 |------|----------|-------------|-----------|
-| Unitarias | Verificar algoritmos individuales | Jest/Mocha o manual | script.js |
+| Unitarias | Verificar algoritmos individuales | Manual (botones en interfaz) | script.js |
 | Integración | Verificar flujo completo | Manual + Browser | index.html |
 | Regresión | Verificar cambios no rompan funcionalidades | Manual | Todos |
 | Rendimiento | Verificar tiempo de respuesta | Console API | Navegador |
@@ -28,8 +28,8 @@
 ### Criterios de Aceptación
 
 Una característica es **aceptada** cuando:
-1. Todos los casos de prueba pasan (100% éxito)
-2. No hay errores en consola
+1. Los tests manuales (botones en la sección de pruebas) pasan (100% éxito)
+2. No hay errores en consola (F12)
 3. La funcionalidad cumple el requisito de la rúbrica
 4. La experiencia de usuario es fluida
 
@@ -39,95 +39,57 @@ Una característica es **aceptada** cuando:
 
 ### 2.1 Pruebas del Algoritmo César
 
-#### Test Case C-001: Cifrado básico
+#### Test Case C-001: Cifrado básico (botón "César básico")
 ```
 Entrada: "abc", shift=3, álphabet="abcdefghijklmnopqrstuvwxyz"
 Esperado: "def"
-Verificación: 
-- a(0) → d(3)
-- b(1) → e(4)  
-- c(2) → f(5)
 ```
 
-#### Test Case C-002: Módulo en borde
+#### Test Case C-002: Wrap-around (botón "César wrap")
 ```
-Entrada: "xyz", shift=3, álphabet="abcdefghijklmnopqrstuvwxyz" (n=26)
+Entrada: "xyz", shift=3, alfabeto="abcdefghijklmnopqrstuvwxyz" (n=26)
 Esperado: "abc"
-Verificación:
-- x(23) → a(26 mod 26 = 0)
-- y(24) → b(27 mod 26 = 1)
-- z(25) → c(28 mod 26 = 2)
-```
-
-#### Test Case C-003: Caracteres fuera del conjunto
-```
-Entrada: "a!b@c#", shift=1, álphabet="abc"
-Esperado: "b!c@d#"
-Verificación:
-- a → b (dentro del conjunto)
-- !, @, # preservados sin cambio
-```
-
-#### Test Case C-004: Conjunto personalizado
-```
-Entrada: "012", shift=1, álphabet="0123456789"
-Esperado: "123"
-Verificación:
-- 0(0) → 1(1)
-- 1(1) → 2(2)
-- 2(2) → 3(3)
+Entrada: "abc", shift=-1, alfabeto="abcdefghijklmnopqrstuvwxyz"
+Esperado: "zab"
 ```
 
 ### 2.2 Pruebas del Algoritmo Atbash
 
-#### Test Case A-001: Cifrado básico
+#### Test Case A-001: Cifrado básico (botón "Atbash básico")
 ```
-Entrada: "abcde", álphabet="abcde" (n=5)
+Entrada: "abcde", alfabeto="abcde" (n=5)
 Esperado: "edcba"
-Verificación:
-- a(0) → e(4) [complemento: 5-1-0=4]
-- b(1) → d(3)
-- c(2) → c(2)
-- d(3) → b(1)
-- e(4) → a(0)
 ```
 
-#### Test Case A-002: Caracteres fuera del conjunto
+### 2.3 Pruebas Round-trip
+
+#### Test Case R-001: Round-trip César y Atbash (botón "Round-trip")
 ```
-Entrada: "a!e", álphabet="abcde"
-Esperado: "e!a"
-Verificación:
-- a → e (dentro del conjunto)
-- ! preservado
-- e → a (dentro del conjunto)
+Original: "hola mundo"
+Cifrar con César shift=5 → descifrar → "hola mundo"
+Cifrar con Atbash → descifrar → "hola mundo"
 ```
 
-#### Test Case A-003: Par de caracteres simétrico
+### 2.4 Pruebas de Detección Automática
+
+#### Test Case D-001: Auto César (botón "Auto: César")
 ```
-Entrada: "c", álphabet="abcde"
-Esperado: "c"
-Verificación:
-- c(2) → c(2) [posición central]
+Original: "el murcielago coma mosca"
+Cifrado con César shift=7
+Esperado: método=César, shift=7, texto="el murcielago coma mosca"
 ```
 
-### 2.3 Pruebas de Detección Automática
-
-#### Test Case D-001: Detectar César con shift=3
+#### Test Case D-002: Auto Atbash (botón "Auto: Atbash")
 ```
-Texto cifrado: "def" (de "abc" con shift=3)
-Método esperado: César, shift=3
-```
-
-#### Test Case D-002: Detectar Atbash
-```
-Texto cifrado: "edcba" (de "abcde")
-Método esperado: Atbash
+Original: "el murcielago coma mosca"
+Cifrado con Atbash
+Esperado: método=Atbash, texto="el murcielago coma mosca"
 ```
 
-#### Test Case D-003: Texto corto ambiguo
+#### Test Case D-003: Casos difíciles (botón "Auto: casos difíciles")
 ```
-Texto cifrado: "a"
-Método esperado: Ambas válidas, usar heurística adicional
+Texto corto: "h" → verifica que el sistema no falla
+Texto aleatorio: "xqzmvpfrt" → verifica ambigüedad o baja puntuación
 ```
 
 ---
@@ -141,7 +103,7 @@ Método esperado: Ambas válidas, usar heurística adicional
 | **Programa web cifrado/descifrado** | WEB-001 | Interfaz funcional al cargar | Pasa |
 | **Conjunto de caracteres ASCII/config** | CH-001 | Selector de conjuntos funciona | Pasa |
 | **Caracteres fuera del conjunto** | CH-002 | Caracteres preservados | Pasa |
-| **Selección automática módulo** | MOD-001 | Botón detecta automáticamente | Pasa |
+| **Selección automática módulo** | MOD-001 | Botón "Procesar" en modo automático detecta automáticamente | Pasa |
 | **Descifrado César con módulo** | CE-001 | Detecta shift correctamente | Pasa |
 | **Detección automática tipo** | DET-001 | Muestra Atbash o César | Pasa |
 | **Línea descifrada correcta sin intervención** | AUTO-001 | Solo muestra una línea | Pasa |
@@ -153,7 +115,7 @@ Método esperado: Ambas válidas, usar heurística adicional
 Texto original: "el rata"
 Conjunto: "abcdefghijklmnopqrstuvwxyz"
 Shift: 5
-Texto cifrado: "mj wfymf"
+Texto cifrado: "jq wfymf"
 Detección: César, shift=5
 Resultado: "el rata"
 ```
@@ -162,7 +124,7 @@ Resultado: "el rata"
 ```
 Texto original: "hola"
 Conjunto: "abcdefghijklmnopqrstuvwxyz"
-Texto cifrado: "slvi"
+Texto cifrado: "slov"
 Detección: Atbash
 Resultado: "hola"
 ```
@@ -170,8 +132,9 @@ Resultado: "hola"
 #### Ejemplo 3: Texto con caracteres especiales
 ```
 Texto original: "¡Hola, señor!"
-Conjunto: "abcdefghijklmnopqrstuvwxyzáéíóú¡¿, "
-Texto cifrado: "¡Jsli, sáliv!" (Atbash sobre conjunto especializado)
+Conjunto: "abcdefghijklmnopqrstuvwxyzáéíóú¡¿, " (35 caracteres)
+Texto cifrado: "dHux baqúñur!" (Atbash sobre conjunto especializado)
+Nota: la "H" mayúscula no pertenece al conjunto y se preserva sin cambios.
 ```
 
 ---
@@ -335,15 +298,7 @@ Estado: Deben pasar
 
 ### Automatización (Opcional)
 
-Si se requiere automatización:
-```javascript
-// Usar framework de testing
-// Ej: Jest para funciones unitarias
-// Ej: Cypress para tests E2E
-
-// Comando sugerido:
-npm test
-```
+No hay scripts de automatización configurados en este proyecto. Las pruebas se ejecutan manualmente a través de los botones en la sección de pruebas de la interfaz.
 
 ---
 
@@ -351,7 +306,7 @@ npm test
 
 | Fecha | Tester | Estado | Comentario |
 |-------|--------|--------|------------|
-| [Fecha] | [Nombre] | Pendiente | Preparar para demostración |
+| Septiembre 2026 | Edson Leonardo Sánchez Montalvo | Pendiente | Preparar para demostración |
 
 ---
 

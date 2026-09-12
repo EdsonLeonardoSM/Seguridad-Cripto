@@ -9,7 +9,7 @@ Este documento describe las medidas de seguridad del sistema, qué protege, qué
 ### A. Cifrado y Descifrado Seguro
 
 **Confidencialidad del Algoritmo**:
-- Los algoritmos César y Atbash implementados son criptografía de solo especulación (muy simple)
+- Los algoritmos César y Atbash implementados son cifrados clásicos extremadamente simples, con fines educativos
 - La fortaleza del sistema no depende del secreto del algoritmo, sino de su correcta implementación
 - Los algoritmos son independientes de cualquier secreto: No almacenan ni dependen de claves privadas
 
@@ -146,27 +146,9 @@ const API_KEY = "sk-1234567890abcdef"; // ¡SIEMPRE visible!
 - **No hacemos promesas de seguridad no realizables**
 - **Honramos honestamente los límites del cifrado clásico**
 
-## Implementación de Control de Acceso (Tecnología)
+## Control de Acceso: No Existe en Esta Aplicación
 
-### Hacer Sistema Fácilmente Accesible
-
-**Enfoque**: Hacer el sistema fácilmente accesible para demostración:
-
-```javascript
-// Ejemplo: Lista blanca simple de códigos de demostración
-const DEMO_CODES = ["DEMO123", "SAMPLE456"];
-
-// Validación simple (no para seguridad real)
-function isValidDemoCode(code) {
-    return DEMO_CODES.includes(code);
-}
-```
-
-**Propósito**:
-- **Limita accesos no deseados** (baja barrera)
-- **Hace sistema reproducible** (código visible)
-- **Facilita demostración** (fácil de compartir)
-- **Sin promesas de seguridad** (no es real)
+Esta aplicación no implementa ningún control de acceso: no hay usuarios, contraseñas, ni códigos de demostración en el código (`script.js` no contiene ninguna función de validación de acceso). Cualquier persona con el enlace puede usarla, lo cual es coherente con su propósito educativo y con el hecho de que una página estática no puede ocultar secretos.
 
 ### Por Qué es Aceptable Para Este Proyecto
 
@@ -190,7 +172,7 @@ function isValidDemoCode(code) {
 | **Limitaciones honestas** | ✅ Cumple | Explicación clara de lo que NO protege |
 | **Fuentes académicas verificables** | ✅ Cumple | Se identifican fuentes para verificación posterior |
 | **Redacción técnicamente precisa** | ✅ Cumple | Evita afirmaciones criptográficas falsas |
-| **Control de acceso realista** | ✅ Cumple | Control simple, no para seguridad real |
+| **Sin control de acceso ficticio** | ✅ Cumple | No se implementa ni se promete control de acceso |
 
 ## Tácticas de Despliegue Seguro
 
@@ -244,7 +226,7 @@ Este sistema cumple con el requisito de "documentación segura" al:
 2. **Documentar lo que realmente protege** y lo que no
 3. **No exponer secrets reales** en el código
 4. **Explicar por qué es inseguro para uso real**
-5. **Implementar control de acceso simple** sin pretender que es seguridad real
+5. **No incluir controles de acceso ficticios**
 
 La seguridad del sistema radica en su correcta documentación y honestidad, no en ocultar código.
 
@@ -253,8 +235,8 @@ La seguridad del sistema radica en su correcta documentación y honestidad, no e
 
 ## Referencias para Verificación
 
-[1] Abu Yusuf al-Kindi. "Libro de la Criptografía". Siglo IX.
+[1] Abu Yusuf Ya'qub ibn Ishaq al-Kindi. *Risāla fī Istikhrāj al-Muʿamma* (Manuscrito sobre el desciframiento de mensajes criptográficos). Siglo IX d.C.
 [2] Katz, J., & Lindell, Y. "Introducción a la Criptografía Moderna". 2020.
-[3] Schneier, B. "Seguridad Práctica para el Diseño de Criptografía Adiagonal". 1994.
+[3] Schneier, B. *Applied Cryptography: Protocols, Algorithms, and Source Code in C*. 2da edición. John Wiley & Sons, 1996.
 
 *Las fuentes académicas para verificación posterior se identifican en este documento para mantener la transparencia académica.*

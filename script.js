@@ -9,12 +9,21 @@ const App = {
     shift: 3,
     operationMode: 'encrypt',
 
-    DEFAULT_ALPHABET: 'abcdefghijklmnopqrstuvwxyz',
+DEFAULT_ALPHABET: 'abcdefghijklmnopqrstuvwxyz',
     PRESET_ALPHABETS: {
         basic: 'abcdefghijklmnopqrstuvwxyz',
         extended: 'abcdefghijklmnopqrstuvwxyzáéíóúüñ',
-        ascii: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-    },
+        ascii: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',
+        ascii7: (() => {
+            let s = '';
+            for (let i = 32; i <= 126; i++) {
+                s += String.fromCharCode(i);
+            }
+                return s;
+            })(),
+
+            custom: ''
+        },
 
     spanishFreq: {},
     spanishBigrams: {},
@@ -678,6 +687,14 @@ function init() {
     document.getElementById('setExtendedAlphabet').addEventListener('click', () => {
         document.getElementById('alphabetInput').value = App.PRESET_ALPHABETS.extended;
         setAlphabet(App.PRESET_ALPHABETS.extended);
+    });
+    document.getElementById('setAsciiAlphabet').addEventListener('click', () => {
+        document.getElementById('alphabetInput').value = App.PRESET_ALPHABETS.ascii;
+        setAlphabet(App.PRESET_ALPHABETS.ascii);
+    });
+    document.getElementById('setAscii7Alphabet').addEventListener('click', () => {
+        document.getElementById('alphabetInput').value = App.PRESET_ALPHABETS.ascii7;
+        setAlphabet(App.PRESET_ALPHABETS.ascii7);
     });
     document.getElementById('alphabetInput').addEventListener('input', (e) => {
         if (e.target.value) setAlphabet(e.target.value);

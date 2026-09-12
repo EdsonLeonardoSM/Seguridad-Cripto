@@ -8,7 +8,7 @@ El proyecto implementa una aplicación web estática completa (Single Page Appli
 
 ```
 ├── index.html          # Estructura HTML principal
-├── styles.css          # Estilos CSS (incrustados en index.html o archivos separados)
+├── styles.css          # Estilos CSS (archivo separado)
 └── script.js           # Lógica JavaScript de cifrado y detección
 ```
 
@@ -16,7 +16,7 @@ El proyecto implementa una aplicación web estática completa (Single Page Appli
 
 1. **Capa de Presentación** (HTML/CSS)
    - Área de entrada de texto
-   - Botones de acción (cifrar, descifrar, analizar)
+   - Botones de acción (cifrar, descifrar, automático)
    - Área de salida de resultados
    - Indicadores de estado
 
@@ -28,8 +28,7 @@ El proyecto implementa una aplicación web estática completa (Single Page Appli
 
 3. **Capa de Datos** (Memoria del navegador)
    - Configuración del conjunto de caracteres
-   - Historial de transformaciones (opcional)
-   - Cache de resultados para optimización
+   - Estado de la aplicación (modo, desplazamiento, alfabeto activo)
 
 ## Flujo de Datos
 
@@ -50,7 +49,7 @@ El proyecto implementa una aplicación web estática completa (Single Page Appli
 1. **Entrada**: El usuario ingresa texto en el área de texto
 2. **Preprocesamiento**: Se detecta el conjunto de caracteres configurado
 3. **Selección de Algoritmo**: 
-   - Si se especifica "Analizar todo", se ejecutan ambos algoritmos
+   - Si se selecciona modo "Automático", se ejecutan ambos algoritmos
    - Si se especifica César o Atbash directamente, se usa el seleccionado
 4. **Transformación**:
    - Para César: Se prueba cada posible desplazamiento dentro del conjunto
@@ -76,8 +75,9 @@ El proyecto implementa una aplicación web estática completa (Single Page Appli
 Cada función tiene una única responsabilidad clara:
 - `caesarEncrypt()`: Solo implementa el cifrado César
 - `atbashEncrypt()`: Solo implementa el cifrado Atbash
-- `analyzeFrequency()`: Solo realiza análisis de frecuencia
-- `scoreLinguisticQuality()`: Solo evalúa calidad lingüística
+- `calculateFrequencies()`: Solo realiza análisis de frecuencia
+- `calculateLinguisticScore()`: Solo calcula puntuación lingüística
+- `combinedScore()`: Combina frecuencia y puntuación lingüística
 
 ### Functional Programming Approach
 
@@ -117,11 +117,19 @@ Cada función tiene una única responsabilidad clara:
 
 ```javascript
 {
-  alphabet: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
-  name: "Alfanumérico estándar",
-  description: "Letras mayúsculas, minúsculas y dígitos"
+  alphabet: "abcdefghijklmnopqrstuvwxyz",
+  name: "Básico"
 }
 ```
+
+Alfabetos predefinidos disponibles:
+
+| Nombre | Valor | Longitud |
+|--------|-------|----------|
+| Básico | a–z | 26 |
+| Extendido | a–z + acentos + ñ | 33 |
+| ASCII alfanumérico | a–z, A–Z, 0–9 | 62 |
+| ASCII 7 bits | Caracteres imprimibles (códigos 32–126) | 95 |
 
 ### Resultado de Transformación
 
@@ -133,9 +141,7 @@ Cada función tiene una única responsabilidad clara:
   parameters: {
     shift: 3, // para César
     // nada para Atbash
-  },
-  score: 0.85, // puntuación de calidad lingüística
-  confidence: "Alta|Media|Baja"
+  }
 }
 ```
 

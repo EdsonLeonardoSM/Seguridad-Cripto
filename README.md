@@ -2,9 +2,8 @@
 
 **Materia:** Seguridad en Sistemas de Cómputo I  
 **Proyecto:** Sistema de Cifrado César y Atbash con Descifrado Automático  
-**Autor:** [Estudiante]  
-**Fecha:** [Fecha]  
-**Contacto:** [Correo electrónico del estudiante]
+**Autor:** Edson Leonardo Sánchez Montalvo  
+**Fecha:** Septiembre de 2026
 
 ---
 
@@ -102,6 +101,18 @@ La documentación detallada del código se encuentra en los siguientes archivos:
 
 ---
 
+### Cómo utilizar el proyecto
+
+No se requiere instalación ni servidor. Basta con abrir `index.html` en un navegador moderno (con JavaScript habilitado):
+
+1. **Definir el alfabeto:** escribir un conjunto de caracteres o usar un botón predefinido (`a–z`, `a–z + ñ`, `ASCII`, `ASCII 7 bits`).
+2. **Modo Cifrar:** elegir el método (César o Atbash), configurar el desplazamiento si es César, escribir el texto y pulsar **Procesar**.
+3. **Modo Descifrar:** elegir el método y el desplazamiento con el que se cifró, escribir el texto cifrado y pulsar **Procesar**.
+4. **Modo Automático:** escribir el texto cifrado y pulsar **Descifrar automáticamente**. El sistema detecta el método y el desplazamiento, y muestra únicamente la línea descifrada ganadora (con advertencia si hay ambigüedad).
+5. **Pruebas:** desplegar la sección inferior "Pruebas del motor" y ejecutar los casos individuales o "Ejecutar todas".
+
+---
+
 ### Cifrado César
 
 El cifrado César es un método de sustitución por desplazamiento definido matemáticamente como:
@@ -124,15 +135,16 @@ A(cᵢ) = c_{n-1-i}
 
 El descifrado es idéntico al cifrado porque la operación es simétrica (involutiva). El sistema lo detecta automáticamente cuando se compara contra César en el modo de descifrado automático.
 
-### Base en ASCII y conjunto de caracteres configurable
+### Alfabetos predefinidos
 
-El sistema soporta un conjunto de caracteres configurable por el usuario. Los alfabetos predefinidos incluyen:
+El sistema incluye cuatro conjuntos de caracteres predefinidos:
 
-- **Básico:** Letras minúsculas latinas (a-z, 26 caracteres)
-- **Extendido:** Letras latinas con acentos y ñ (a-z, á, é, í, ó, ú, ü, ñ)
-- **ASCII:** Letras mayúsculas y minúsculas más dígitos (a-z, A-Z, 0-9, 62 caracteres)
+1. **Básico:** `abcdefghijklmnopqrstuvwxyz` (26 caracteres)
+2. **Extendido:** `abcdefghijklmnopqrstuvwxyzáéíóúüñ` (33 caracteres)
+3. **ASCII alfanumérico:** `abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789` (62 caracteres)
+4. **ASCII 7 bits (imprimible):** 95 caracteres (códigos 32–126)
 
-El usuario puede definir cualquier conjunto de caracteres personalizado. Los caracteres que no pertenecen al conjunto se preservan sin cambios durante el cifrado o descifrado.
+El usuario también puede definir un alfabeto personalizado. Los caracteres que no pertenecen al conjunto se preservan sin cambios durante el cifrado o descifrado.
 
 ### Caracteres Unicode y símbolos
 
@@ -211,14 +223,10 @@ La implementación de un descifrado automático que combina análisis estadísti
 
 ---
 
-## Enlaces de Entrega
+## Enlaces
 
-El proyecto debe entregarse con dos enlaces separados:
-
-1. **Enlace del programa** (web de cifrado/descifrado)
-2. **Enlace del código fuente** (GitHub)
-
-Los estudiantes deben compartir ambos enlaces en el área de comentarios para recibir calificación.
+1. **Programa (GitHub Pages):** https://edsonleonardosm.github.io/Seguridad-Cripto/
+2. **Código fuente (GitHub):** https://github.com/EdsonLeonardoSM/Seguridad-Cripto
 
 ---
 
