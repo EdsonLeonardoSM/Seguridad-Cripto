@@ -136,24 +136,64 @@ function hideAlphabetErrors() {
     document.getElementById('alphabetErrors').classList.add('hidden');
 }
 
+/* GRUPOS POR MAYUSCULAS/MINUSCULAS (fix Atbash 52 chars) */
+function getAlphabetGroups(alphabet) {
+    const chars = [...alphabet];
+    return {
+        upper: chars.filter(c => c >= 'A' && c <= 'Z'),
+        lower: chars.filter(c => c >= 'a' && c <= 'z'),
+        digits: chars.filter(c => c >= '0' && c <= '9')
+    };
+}
+
+function useGroupedMode(alphabet, groups) {
+    return groups.upper.length > 0 && groups.lower.length > 0;
+}
+
+function caesarShiftInGroup(char, shift, group) {
+    const n = group.length;
+    const idx = group.indexOf(char);
+    let newIdx = (idx + shift) % n;
+    while (newIdx < 0) newIdx += n;
+    return group[newIdx];
+}
+
 /* CIFRADO CESAR */
 // [XTZ-07]
 function caesarEncrypt(text, shift, alphabet) {
     const n = alphabet.length;
     if (n === 0) return { result: text, errors: ['Alfabeto vacio'], charsTransformed: 0 };
+    const groups = getAlphabetGroups(alphabet);
+    const grouped = useGroupedMode(alphabet, groups);
     let transformed = '';
     let charsTransformed = 0;
     for (const char of text) {
-        const idx = alphabet.indexOf(char);
-        if (idx !== -1) {
-            let newIdx = idx + shift;
-            while (newIdx < 0) newIdx += n;
-            newIdx = newIdx % n;
-            transformed += alphabet[newIdx];
-            charsTransformed++;
-        } else {
-            transformed += char;
+        let done = false;
+        if (grouped) {
+            if (groups.upper.includes(char)) {
+                transformed += caesarShiftInGroup(char, shift, groups.upper);
+                done = true;
+            } else if (groups.lower.includes(char)) {
+                transformed += caesarShiftInGroup(char, shift, groups.lower);
+                done = true;
+            } else if (groups.digits.length > 1 && groups.digits.includes(char)) {
+                transformed += caesarShiftInGroup(char, shift, groups.digits);
+                done = true;
+            }
         }
+        if (!done) {
+            const idx = alphabet.indexOf(char);
+            if (idx !== -1) {
+                let newIdx = idx + shift;
+                while (newIdx < 0) newIdx += n;
+                newIdx = newIdx % n;
+                transformed += alphabet[newIdx];
+            } else {
+                transformed += char;
+                continue;
+            }
+        }
+        charsTransformed++;
     }
     return { result: transformed, charsTransformed, errors: [] };
 }
@@ -168,17 +208,35 @@ function caesarDecrypt(text, shift, alphabet) {
 function atbashEncrypt(text, alphabet) {
     const n = alphabet.length;
     if (n === 0) return { result: text, errors: ['Alfabeto vacio'], charsTransformed: 0 };
+    const groups = getAlphabetGroups(alphabet);
+    const grouped = useGroupedMode(alphabet, groups);
     let transformed = '';
     let charsTransformed = 0;
     for (const char of text) {
-        const idx = alphabet.indexOf(char);
-        if (idx !== -1) {
-            const mirrorIdx = n - 1 - idx;
-            transformed += alphabet[mirrorIdx];
-            charsTransformed++;
-        } else {
-            transformed += char;
+        let done = false;
+        if (grouped) {
+            if (groups.upper.includes(char)) {
+                transformed += groups.upper[groups.upper.length - 1 - groups.upper.indexOf(char)];
+                done = true;
+            } else if (groups.lower.includes(char)) {
+                transformed += groups.lower[groups.lower.length - 1 - groups.lower.indexOf(char)];
+                done = true;
+            } else if (groups.digits.length > 1 && groups.digits.includes(char)) {
+                transformed += groups.digits[groups.digits.length - 1 - groups.digits.indexOf(char)];
+                done = true;
+            }
         }
+        if (!done) {
+            const idx = alphabet.indexOf(char);
+            if (idx !== -1) {
+                const mirrorIdx = n - 1 - idx;
+                transformed += alphabet[mirrorIdx];
+            } else {
+                transformed += char;
+                continue;
+            }
+        }
+        charsTransformed++;
     }
     return { result: transformed, charsTransformed, errors: [] };
 }
@@ -300,8 +358,11 @@ function calculateLinguisticScore(text, alphabet) {
 /* PUNTUACION COMBINADA */
 // [XTZ-16]
 function combinedScore(candidate, alphabet) {
-    const { freq: observedFreq } = calculateFrequencies(candidate.text, alphabet);
-    const chiSq = chiSquared(observedFreq, App.spanishFreq, alphabet);
+    // Score insensible a mayusculas: baja todo a minusculas para comparar con spanishFreq
+    const lowerText = candidate.text.toLowerCase();
+    const lowerAlphabet = [...new Set([...alphabet].map(c => c.toLowerCase()))].join('');
+    const { freq: observedFreq } = calculateFrequencies(lowerText, lowerAlphabet);
+    const chiSq = chiSquared(observedFreq, App.spanishFreq, lowerAlphabet);
     const freqScore = 1 / (1 + chiSq);
     const lingScore = calculateLinguisticScore(candidate.text, alphabet);
     const normalizedLing = Math.min(lingScore.total / 10, 1);
@@ -318,7 +379,11 @@ function combinedScore(candidate, alphabet) {
 // [XTZ-17]
 function generateCesarCandidates(ciphertext, alphabet) {
     const candidates = [];
-    const n = alphabet.length;
+    const groups = getAlphabetGroups(alphabet);
+    // En modo agrupado los shifts se repiten cada 26, genera solo los unicos
+    const n = useGroupedMode(alphabet, groups)
+        ? Math.max(groups.upper.length, groups.lower.length, groups.digits.length || 0)
+        : alphabet.length;
     for (let shift = 0; shift < n; shift++) {
         const decrypted = caesarDecrypt(ciphertext, shift, alphabet);
         candidates.push({
