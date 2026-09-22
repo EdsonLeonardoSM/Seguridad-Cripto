@@ -83,17 +83,17 @@ function setAlphabet(alphabet) {
 
 function validateAlphabet(alphabet) {
     const errors = [];
-    if (!alphabet || alphabet.length === 0) {
+    const chars = [...alphabet];
+    if (!alphabet || chars.length === 0) {
         errors.push('El alfabeto no puede estar vacio');
         return { valid: false, errors };
     }
-    if (alphabet.length === 1) {
+    if (chars.length === 1) {
         errors.push('El alfabeto debe tener al menos 2 caracteres');
     }
     const seen = new Set();
     const duplicates = [];
-    for (let i = 0; i < alphabet.length; i++) {
-        const char = alphabet[i];
+    for (const char of chars) {
         if (seen.has(char)) {
             if (!duplicates.includes(char)) duplicates.push(char);
         } else {
@@ -104,6 +104,19 @@ function validateAlphabet(alphabet) {
         errors.push('Caracteres duplicados: ' + duplicates.join(', '));
     }
     return { valid: errors.length === 0, errors };
+}
+
+function escapeHtml(text) {
+    return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function getAlphabetLength(alphabet) {
+    return [...alphabet].length;
 }
 
 function displayAlphabet(alphabet) {
@@ -118,17 +131,17 @@ function displayAlphabet(alphabet) {
     }
     let html = '';
     for (const char of alphabet) {
-        html += '<span class="char">' + char + '</span>';
+        html += '<span class="char">' + escapeHtml(char) + '</span>';
     }
     display.innerHTML = html;
-    stats.innerHTML = '<span>Longitud: ' + alphabet.length + '</span>';
-    lengthSpan.textContent = 'Alfabeto: ' + alphabet.length + ' caracteres';
+    stats.innerHTML = '<span>Longitud: ' + getAlphabetLength(alphabet) + '</span>';
+    lengthSpan.textContent = 'Alfabeto: ' + getAlphabetLength(alphabet) + ' caracteres';
 }
 
 function displayAlphabetErrors(errors) {
     const errorDiv = document.getElementById('alphabetErrors');
     const errorList = document.getElementById('alphabetErrorList');
-    errorList.innerHTML = errors.map(e => '<li>' + e + '</li>').join('');
+    errorList.innerHTML = errors.map(e => '<li>' + escapeHtml(e) + '</li>').join('');
     errorDiv.classList.remove('hidden');
 }
 
@@ -147,7 +160,19 @@ function getAlphabetGroups(alphabet) {
 }
 
 function useGroupedMode(alphabet, groups) {
-    return groups.upper.length > 0 && groups.lower.length > 0;
+    // Solo agrupar cuando el alfabeto es puramente alfanumerico ASCII
+    // (preserva A<->Z, a<->z por separado para el preset ASCII).
+    // Con alfabetos de simbolos/Unicode que contienen letras ASCII,
+    // agrupar rompe el cifrado: las letras usarian un anillo de 26
+    // mientras los simbolos usan el anillo completo, y el descifrado
+    // automatico solo probaria 26 desplazamientos en vez de N.
+    if (!(groups.upper.length > 0 && groups.lower.length > 0)) return false;
+    const chars = [...alphabet];
+    return chars.every(c =>
+        (c >= 'A' && c <= 'Z') ||
+        (c >= 'a' && c <= 'z') ||
+        (c >= '0' && c <= '9')
+    );
 }
 
 function caesarShiftInGroup(char, shift, group) {
@@ -161,7 +186,8 @@ function caesarShiftInGroup(char, shift, group) {
 /* CIFRADO CESAR */
 // [XTZ-07]
 function caesarEncrypt(text, shift, alphabet) {
-    const n = alphabet.length;
+    const chars = [...alphabet];
+    const n = chars.length;
     if (n === 0) return { result: text, errors: ['Alfabeto vacio'], charsTransformed: 0 };
     const groups = getAlphabetGroups(alphabet);
     const grouped = useGroupedMode(alphabet, groups);
@@ -182,12 +208,12 @@ function caesarEncrypt(text, shift, alphabet) {
             }
         }
         if (!done) {
-            const idx = alphabet.indexOf(char);
+            const idx = chars.indexOf(char);
             if (idx !== -1) {
                 let newIdx = idx + shift;
                 while (newIdx < 0) newIdx += n;
                 newIdx = newIdx % n;
-                transformed += alphabet[newIdx];
+                transformed += chars[newIdx];
             } else {
                 transformed += char;
                 continue;
@@ -206,7 +232,8 @@ function caesarDecrypt(text, shift, alphabet) {
 /* CIFRADO ATBASH */
 // [XTZ-09]
 function atbashEncrypt(text, alphabet) {
-    const n = alphabet.length;
+    const chars = [...alphabet];
+    const n = chars.length;
     if (n === 0) return { result: text, errors: ['Alfabeto vacio'], charsTransformed: 0 };
     const groups = getAlphabetGroups(alphabet);
     const grouped = useGroupedMode(alphabet, groups);
@@ -227,10 +254,10 @@ function atbashEncrypt(text, alphabet) {
             }
         }
         if (!done) {
-            const idx = alphabet.indexOf(char);
+            const idx = chars.indexOf(char);
             if (idx !== -1) {
                 const mirrorIdx = n - 1 - idx;
-                transformed += alphabet[mirrorIdx];
+                transformed += chars[mirrorIdx];
             } else {
                 transformed += char;
                 continue;
@@ -279,9 +306,10 @@ function normalizeShift(shift, alphabetLength) {
 function calculateFrequencies(text, alphabet) {
     const freq = {};
     let total = 0;
-    for (const char of alphabet) freq[char] = 0;
+    const alphaSet = new Set([...alphabet]);
+    for (const char of alphaSet) freq[char] = 0;
     for (const char of text) {
-        if (alphabet.indexOf(char) !== -1) {
+        if (alphaSet.has(char)) {
             freq[char]++;
             total++;
         }
@@ -383,7 +411,7 @@ function generateCesarCandidates(ciphertext, alphabet) {
     // En modo agrupado los shifts se repiten cada 26, genera solo los unicos
     const n = useGroupedMode(alphabet, groups)
         ? Math.max(groups.upper.length, groups.lower.length, groups.digits.length || 0)
-        : alphabet.length;
+        : getAlphabetLength(alphabet);
     for (let shift = 0; shift < n; shift++) {
         const decrypted = caesarDecrypt(ciphertext, shift, alphabet);
         candidates.push({
@@ -462,7 +490,7 @@ function processText() {
     let result, info = '';
     if (mode === 'encrypt') {
         const method = getSelectedMethod();
-        const shift = normalizeShift(getShift(), alphabet.length);
+        const shift = normalizeShift(getShift(), getAlphabetLength(alphabet));
         if (method === 'cesar') {
             result = caesarEncrypt(text, shift, alphabet);
             info = 'Cifrado Cesar con desplazamiento: ' + shift;
@@ -470,11 +498,11 @@ function processText() {
             result = atbashEncrypt(text, alphabet);
             info = 'Cifrado Atbash';
         }
-        info += '<br>Alfabeto: ' + alphabet.length + ' caracteres';
+        info += '<br>Alfabeto: ' + getAlphabetLength(alphabet) + ' caracteres';
         info += '<br>Transformados: ' + result.charsTransformed;
     } else if (mode === 'decrypt') {
         const method = getSelectedMethod();
-        const shift = normalizeShift(getShift(), alphabet.length);
+        const shift = normalizeShift(getShift(), getAlphabetLength(alphabet));
         if (method === 'cesar') {
             result = caesarDecrypt(text, shift, alphabet);
             info = 'Descifrado Cesar con desplazamiento: ' + shift;
@@ -482,7 +510,7 @@ function processText() {
             result = atbashDecrypt(text, alphabet);
             info = 'Descifrado Atbash (simetrico)';
         }
-        info += '<br>Alfabeto: ' + alphabet.length + ' caracteres';
+        info += '<br>Alfabeto: ' + getAlphabetLength(alphabet) + ' caracteres';
         info += '<br>Transformados: ' + result.charsTransformed;
     } else {
         const autoResult = autoDecrypt(text, alphabet);
@@ -549,7 +577,7 @@ function updateStatus() {
     const statusText = document.getElementById('statusText');
     const statusDot = document.getElementById('statusDot');
     if (App.alphabet) {
-        statusText.textContent = 'Motor listo - ' + App.alphabet.length + ' caracteres';
+        statusText.textContent = 'Motor listo - ' + getAlphabetLength(App.alphabet) + ' caracteres';
         statusDot.classList.add('active');
     } else {
         statusText.textContent = 'Definiendo alfabeto...';

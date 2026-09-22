@@ -356,6 +356,10 @@
                 return (input && input.value) ? input.value : '';
             }
 
+            function escapeVis(c) {
+                return c.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            }
+
             function renderCesarVis() {
                 if (!cesarRowTop) return;
                 var alpha = getAlphabet();
@@ -366,23 +370,25 @@
                     return;
                 }
                 // Para alfabetos largos, mostrar solo los primeros N
-                var max = Math.min(alpha.length, 14);
-                var alphaSlice = alpha.slice(0, max);
+                // Array.from: seguro con Unicode (pares sustitutos/emoji).
+                var chars = Array.from(alpha);
+                var max = Math.min(chars.length, 14);
+                var alphaSlice = chars.slice(0, max);
                 var shift = parseInt(shiftInput.value, 10) || 0;
                 shift = ((shift % alphaSlice.length) + alphaSlice.length) % alphaSlice.length;
 
-                var top = alphaSlice.split('').map(function (c) {
-                    return '<span class="vis-cell">' + c + '</span>';
+                var top = alphaSlice.map(function (c) {
+                    return '<span class="vis-cell">' + escapeVis(c) + '</span>';
                 }).join('');
-                var arrows = alphaSlice.split('').map(function () {
+                var arrows = alphaSlice.map(function () {
                     return '<span class="vis-arrow">↓</span>';
                 }).join('');
-                var mapped = alphaSlice.split('').map(function (_, i) {
+                var mapped = alphaSlice.map(function (_, i) {
                     var idx = (i + shift) % alphaSlice.length;
                     return alphaSlice[idx];
                 });
                 var bottom = mapped.map(function (c) {
-                    return '<span class="vis-cell vis-cell-result">' + c + '</span>';
+                    return '<span class="vis-cell vis-cell-result">' + escapeVis(c) + '</span>';
                 }).join('');
 
                 cesarRowTop.innerHTML = top;
@@ -399,21 +405,22 @@
                     atbashArrows.innerHTML = '';
                     return;
                 }
-                var max = Math.min(alpha.length, 14);
-                var alphaSlice = alpha.slice(0, max);
+                var chars = Array.from(alpha);
+                var max = Math.min(chars.length, 14);
+                var alphaSlice = chars.slice(0, max);
                 var n = alphaSlice.length;
 
-                var top = alphaSlice.split('').map(function (c) {
-                    return '<span class="vis-cell">' + c + '</span>';
+                var top = alphaSlice.map(function (c) {
+                    return '<span class="vis-cell">' + escapeVis(c) + '</span>';
                 }).join('');
-                var arrows = alphaSlice.split('').map(function () {
+                var arrows = alphaSlice.map(function () {
                     return '<span class="vis-arrow">↓</span>';
                 }).join('');
-                var mirrored = alphaSlice.split('').map(function (_, i) {
+                var mirrored = alphaSlice.map(function (_, i) {
                     return alphaSlice[n - 1 - i];
                 });
                 var bottom = mirrored.map(function (c) {
-                    return '<span class="vis-cell vis-cell-result">' + c + '</span>';
+                    return '<span class="vis-cell vis-cell-result">' + escapeVis(c) + '</span>';
                 }).join('');
 
                 atbashRowTop.innerHTML = top;
@@ -448,6 +455,8 @@
             }
             document.getElementById('setDefaultAlphabet').addEventListener('click', function () { setTimeout(renderAllVis, 0); });
             document.getElementById('setExtendedAlphabet').addEventListener('click', function () { setTimeout(renderAllVis, 0); });
+            document.getElementById('setAsciiAlphabet').addEventListener('click', function () { setTimeout(renderAllVis, 0); });
+            document.getElementById('setAscii7Alphabet').addEventListener('click', function () { setTimeout(renderAllVis, 0); });
 
             // Render inicial
             renderAllVis();
