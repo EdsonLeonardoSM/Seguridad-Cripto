@@ -566,9 +566,12 @@ function copyResult() {
     const text = document.getElementById('outputText').textContent;
     if (text && !text.startsWith('Error') && !text.startsWith('El resultado')) {
         navigator.clipboard.writeText(text).then(() => {
-            const btn = document.getElementById('copyBtn');
-            btn.textContent = 'Copiado!';
-            setTimeout(() => { btn.innerHTML = 'Copiar resultado'; }, 1500);
+            const label = document.getElementById('copyBtnLabel');
+            if (label) {
+                const original = label.textContent;
+                label.textContent = 'Copiado!';
+                setTimeout(() => { label.textContent = original; }, 1500);
+            }
         }).catch(() => {});
     }
 }
@@ -602,7 +605,8 @@ function updateModeUI() {
     const processBtnText = document.getElementById('processBtnText');
     const modeText = document.getElementById('modeText');
     document.querySelectorAll('.mode-option').forEach(opt => opt.classList.remove('selected'));
-    document.getElementById('mode' + mode.charAt(0).toUpperCase() + mode.slice(1)).classList.add('selected');
+    const modeEl = document.getElementById('mode' + mode.charAt(0).toUpperCase() + mode.slice(1));
+    if (modeEl) modeEl.classList.add('selected');
     if (mode === 'encrypt' || mode === 'decrypt') {
         manualConfigCard.classList.remove('manual-config-hidden');
         autoNotice.classList.add('hidden');
@@ -742,8 +746,6 @@ function runTestAutoEdge() {
 }
 
 function runTestAll() {
-    TestEngine.reset();
-    TestEngine.log('EJECUTANDO TODAS LAS PRUEBAS', 'info');
     const reports = [
         runTestCesarBasic(),
         runTestCesarWrap(),
@@ -755,8 +757,10 @@ function runTestAll() {
     ];
     let final = '========== INFORME COMPLETO ==========\n\n';
     final += reports.join('\n');
-    const pass = TestEngine.results.filter(r => r.type === 'pass').length;
-    const fail = TestEngine.results.filter(r => r.type === 'fail').length;
+    // Cada subprueba reinicia TestEngine, asi que el conteo real
+    // se obtiene de los reportes generados, no del estado final.
+    const pass = (final.match(/✓/g) || []).length;
+    const fail = (final.match(/✗/g) || []).length;
     final += '\n========== TOTAL: ' + pass + '/' + (pass + fail) + ' pruebas pasaron ==========\n';
     return final;
 }
@@ -790,7 +794,14 @@ function init() {
         setAlphabet(App.PRESET_ALPHABETS.ascii7);
     });
     document.getElementById('alphabetInput').addEventListener('input', (e) => {
-        if (e.target.value) setAlphabet(e.target.value);
+        if (!e.target.value) {
+            App.alphabet = '';
+            displayAlphabet('');
+            displayAlphabetErrors(['El alfabeto no puede estar vacio']);
+            updateStatus();
+            return;
+        }
+        setAlphabet(e.target.value);
     });
     document.querySelectorAll('input[name="cipherMethod"]').forEach(r => r.addEventListener('change', updateMethodUI));
     document.querySelectorAll('input[name="operationMode"]').forEach(r => r.addEventListener('change', updateModeUI));
