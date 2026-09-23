@@ -407,11 +407,11 @@ function combinedScore(candidate, alphabet) {
 // [XTZ-17]
 function generateCesarCandidates(ciphertext, alphabet) {
     const candidates = [];
-    const groups = getAlphabetGroups(alphabet);
-    // En modo agrupado los shifts se repiten cada 26, genera solo los unicos
-    const n = useGroupedMode(alphabet, groups)
-        ? Math.max(groups.upper.length, groups.lower.length, groups.digits.length || 0)
-        : getAlphabetLength(alphabet);
+    // Probar los n desplazamientos (0 a n-1). En modo agrupado el cifrado
+    // normaliza el shift con la longitud total (normalizeShift), asi que el
+    // desplazamiento efectivo siempre esta en este rango; generar menos
+    // candidatos (p. ej. solo 26) pierde shifts como 30 con digitos.
+    const n = getAlphabetLength(alphabet);
     for (let shift = 0; shift < n; shift++) {
         const decrypted = caesarDecrypt(ciphertext, shift, alphabet);
         candidates.push({
