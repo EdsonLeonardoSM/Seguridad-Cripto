@@ -55,7 +55,7 @@ Además, estos cifrados conservan la distribución de frecuencias del idioma ori
 
 Abu Yusuf Ya'qub ibn Ishaq al-Kindi (801–873 d.C.) fue un filósofo, matemático y científico árabe que vivió en Bagdad durante la Edad de Oro del islam. Es reconocido como uno de los primeros criptoanálisis de la historia.
 
-En su tratado *Risāla fī Istikhrāj al-Muʿamma* (*Manuscrito sobre la desciframiento de mensajes criptográficos*), escrito en el siglo IX, describió por primera vez el método de análisis de frecuencia. Su observación fue que en cualquier idioma, ciertas letras aparecen con mayor regularidad que otras. En español, por ejemplo, la E aparece aproximadamente en el 13.7% de los textos, mientras que la Z aparece en menos del 1%.
+En su tratado *Risāla fī Istikhrāj al-Muʿamma* (*Manuscrito sobre el desciframiento de mensajes criptográficos*), escrito en el siglo IX, describió por primera vez el método de análisis de frecuencia (referencia consultada a través de Kahn [2] y Singh [3]). Su observación fue que en cualquier idioma, ciertas letras aparecen con mayor regularidad que otras. En español, por ejemplo, la E aparece aproximadamente en el 13.7% de los textos, mientras que la Z aparece en menos del 1%.
 
 Este descubrimiento permite romper cifrados de sustitución sin conocer la clave: si en un texto cifrado la letra más frecuente se repite muchas veces, es probable que corresponda a la letra más frecuente del idioma original. Comparando las frecuencias observadas con las esperadas, un analista puede determinar el desplazamiento probable.
 
@@ -108,9 +108,9 @@ El flujo de procesamiento es el siguiente: el usuario ingresa texto en el área 
 
 El sistema permite al usuario definir qué caracteres participarán en el cifrado. Esto significa que el alfabeto no es fijo, sino que puede ser cualquier conjunto de caracteres que el usuario defina.
 
-La validación del alfabeto [XTZ-06] se realiza mediante la función `setAlphabet()`, que verifica tres condiciones: que el alfabeto no esté vacío, que tenga al menos dos caracteres, y que no contenga duplicados. Si alguna de estas condiciones no se cumple, el sistema muestra un mensaje de error descriptivo.
+La validación del alfabeto [XTZ-06] se realiza mediante la función `x06()`, que verifica tres condiciones: que el alfabeto no esté vacío, que tenga al menos dos caracteres, y que no contenga duplicados. Si alguna de estas condiciones no se cumple, el sistema muestra un mensaje de error descriptivo.
 
-Los alfabetos predefinidos disponibles son el alfabeto básico latino (a-z, 26 caracteres), el alfabeto extendido con acentos y ñ (a-z más áéíóúüñ, 34 caracteres) y el alfabeto ASCII (a-z más mayúsculas y dígitos, 62 caracteres).
+Los alfabetos predefinidos disponibles son el alfabeto básico latino (a-z, 26 caracteres), el alfabeto extendido con acentos y ñ (a-z más áéíóúüñ, 33 caracteres) y el alfabeto ASCII (a-z más mayúsculas y dígitos, 62 caracteres).
 
 Cualquier carácter que no pertenezca al alfabeto activo se preserva sin cambios durante la transformación. Esto incluye espacios, signos de puntuación, números no incluidos en el conjunto y caracteres Unicode siempre que no formen parte del alfabeto definido.
 
@@ -124,9 +124,9 @@ La fórmula matemática es: C(i) = (i + k) mod n
 
 Donde i es la posición del carácter en el alfabeto, k es el desplazamiento y n es el tamaño del alfabeto.
 
-Para descifrar [XTZ-08], se aplica el desplazamiento inverso: D(i) = (i - k) mod n. En la implementación, `caesarDecrypt()` reutiliza `caesarEncrypt()` con desplazamiento negativo.
+Para descifrar [XTZ-08], se aplica el desplazamiento inverso: D(i) = (i - k) mod n. En la implementación, `x08()` reutiliza `x07()` con desplazamiento negativo.
 
-El algoritmo maneja correctamente los desplazamientos negativos y los desplazamientos mayores que el tamaño del alfabeto mediante la función `normalizeShift()` [XTZ-11].
+El algoritmo maneja correctamente los desplazamientos negativos y los desplazamientos mayores que el tamaño del alfabeto mediante la función `x11()` [XTZ-11].
 
 **Ejemplo:** con alfabeto "abcde" (n=5) y desplazamiento k=2:
 
@@ -146,7 +146,7 @@ El cifrado Atbash [XTZ-09] invierte el alfabeto respecto a su posición central.
 
 El primer carácter se intercambia con el último, el segundo con el penúltimo, y así sucesivamente.
 
-La propiedad fundamental de Atbash es su simetría: aplicar Atbash dos veces devuelve el texto original. Por esto, `atbashEncrypt()` y `atbashDecrypt()` son la misma función.
+La propiedad fundamental de Atbash es su simetría: aplicar Atbash dos veces devuelve el texto original. Por esto, `x09()` y `x09i()` comparten la misma lógica de inversión.
 
 **Ejemplo:** con alfabeto "abcde" (n=5):
 
@@ -170,7 +170,7 @@ El proceso genera todos los candidatos posibles. Para César, genera un candidat
 
 El sistema implementa el método de análisis de frecuencia descrito por Al-Kindi [XTZ-12].
 
-Se utilizan cuatro conjuntos de datos estadísticos del español: frecuencias de letras individuales [XTZ-02] (E: 13.72%, A: 12.53%, O: 8.68%, etc.), bigramas comunes [XTZ-03] ("de", "la", "el", "en", "qu", etc.), trigramas comunes [XTZ-04] ("que", "los", "las", "del", etc.) y palabras frecuentes [XTZ-05] ("el", "la", "de", "en", "un", etc.).
+Se utilizan cuatro conjuntos de datos estadísticos del español: frecuencias de letras individuales [XTZ-02] (E: 13.72%, A: 12.53%, O: 8.68%, etc.), bigramas comunes [XTZ-03] ("de", "la", "el", "en", "qu", etc.), trigramas comunes [XTZ-04] ("que", "los", "las", "del", etc.) y palabras frecuentes [XTZ-05] ("el", "la", "de", "en", "un", etc.). Estos valores son datos de referencia del español basados en el Corpus de Referencia del Español Actual (CREA) [4], implementados en `script.js` como datos de trabajo del prototipo académico.
 
 El test chi-cuadrado [XTZ-13] mide la diferencia entre las frecuencias observadas en el texto candidato y las frecuencias esperadas en español. Un valor χ² pequeño indica que el texto candidato es probable que sea español válido.
 
@@ -206,31 +206,31 @@ El código fuente de script.js utiliza identificadores breves [XTZ-XX] que permi
 
 | Código | Componente | Ubicación | Descripción |
 |--------|-----------|-----------|-------------|
-| [XTZ-01] | Estado global | script.js:7 | Alfabeto activo, desplazamiento por defecto, alfabetos predefinidos. |
-| [XTZ-02] | Frecuencias español | script.js:31 | Frecuencias relativas de letras en español. |
-| [XTZ-03] | Bigramas español | script.js:40 |Bigramas comunes con puntuaciones. |
-| [XTZ-04] | Trigramas español | script.js:48 | Trigramas comunes. |
-| [XTZ-05] | Palabras comunes | script.js:54 | Lista de palabras frecuentes del español. |
-| [XTZ-06] | Validación alfabeto | script.js:62 | `setAlphabet()`: validación y establecimiento del alfabeto. |
-| [XTZ-07] | Cifrado César | script.js:132 | `caesarEncrypt()`: implementación del cifrado César. |
-| [XTZ-08] | Descifrado César | script.js:153 | `caesarDecrypt()`: descifrado César. |
-| [XTZ-09] | Cifrado/Descifrado Atbash | script.js:159,178 | `atbashEncrypt/atbashDecrypt()`: inversión del alfabeto. |
-| [XTZ-11] | Normalización shift | script.js:203 | `normalizeShift()`: ajusta el desplazamiento al rango válido. |
-| [XTZ-12] | Análisis de frecuencia | script.js:212 | `calculateFrequencies()`: calcula frecuencias observadas. |
-| [XTZ-13] | Chi-cuadrado | script.js:229 | `chiSquared()`: calcula la distancia χ². |
-| [XTZ-14] | Análisis lingüístico | script.js:245,256,267 | `countBigrams, countTrigrams, countCommonWords`. |
-| [XTZ-15] | Puntuación lingüística | script.js:279 | `calculateLinguisticScore()`: combina bigramas, trigramas y palabras. |
-| [XTZ-16] | Puntuación combinada | script.js:293 | `combinedScore()`: 0.4 × freqScore + 0.6 × lingScore. |
-| [XTZ-17] | Candidatos César | script.js:310 | `generateCesarCandidates()`: genera n candidatos, uno por desplazamiento. |
-| [XTZ-18] | Detección de ambigüedad | script.js:337 | `detectAmbiguity()`: determina si los dos mejores candidatos son similares. |
-| [XTZ-19] | Descifrado automático | script.js:353 | `autoDecrypt()`: orquestación de generación, evaluación y selección. |
-| [XTZ-20] | Candidato Atbash | script.js:326 | `generateAtbashCandidate()`: genera el candidato Atbash. |
-| [XTZ-21] | Procesamiento principal | script.js:376 | `processText()`: despachador de cifrar, descifrar manual y automático. |
-| [XTZ-22] | Motor de pruebas | script.js:529 | `TestEngine`: framework de assertions y reportes. |
-| [XTZ-23] | Obtener modo | script.js:487 | `getOperationMode()`: lee el modo seleccionado. |
-| [XTZ-24] | UI por modo | script.js:496 | `updateModeUI()`: adapta la interfaz según el modo. |
-| [XTZ-25] | UI por método | script.js:519 | `updateMethodUI()`: muestra/oculta opciones de César o Atbash. |
-| [XTZ-26] | Inicialización | script.js:671 | `init()`: configuración inicial de la aplicación. |
+| [XTZ-01] | Estado global | script.js | Alfabeto activo, desplazamiento por defecto, alfabetos predefinidos. |
+| [XTZ-02] | Frecuencias español | script.js | Frecuencias relativas de letras en español. |
+| [XTZ-03] | Bigramas español | script.js |Bigramas comunes con puntuaciones. |
+| [XTZ-04] | Trigramas español | script.js | Trigramas comunes. |
+| [XTZ-05] | Palabras comunes | script.js | Lista de palabras frecuentes del español. |
+| [XTZ-06] | Validación alfabeto | script.js | `x06()`: validación y establecimiento del alfabeto. |
+| [XTZ-07] | Cifrado César | script.js | `x07()`: implementación del cifrado César. |
+| [XTZ-08] | Descifrado César | script.js | `x08()`: descifrado César. |
+| [XTZ-09] | Cifrado/Descifrado Atbash | script.js | `x09/x09i()`: inversión del alfabeto. |
+| [XTZ-11] | Normalización shift | script.js | `x11()`: ajusta el desplazamiento al rango válido. |
+| [XTZ-12] | Análisis de frecuencia | script.js | `x12()`: calcula frecuencias observadas. |
+| [XTZ-13] | Chi-cuadrado | script.js | `x13()`: calcula la distancia χ². |
+| [XTZ-14] | Análisis lingüístico | script.js | `x14b(), x14t(), x14w()`. |
+| [XTZ-15] | Puntuación lingüística | script.js | `x15()`: combina bigramas, trigramas y palabras. |
+| [XTZ-16] | Puntuación combinada | script.js | `x16()`: 0.4 × freqScore + 0.6 × lingScore. |
+| [XTZ-17] | Candidatos César | script.js | `x17()`: genera n candidatos, uno por desplazamiento. |
+| [XTZ-18] | Detección de ambigüedad | script.js | `x18()`: determina si los dos mejores candidatos son similares. |
+| [XTZ-19] | Descifrado automático | script.js | `x19()`: orquestación de generación, evaluación y selección. |
+| [XTZ-20] | Candidato Atbash | script.js | `x20()`: genera el candidato Atbash. |
+| [XTZ-21] | Procesamiento principal | script.js | `x21()`: despachador de cifrar, descifrar manual y automático. |
+| [XTZ-22] | Motor de pruebas | script.js | `x22`: framework con rs(), lg(), ok(), eq() y rp() más pruebas v01–v07 y vAll. |
+| [XTZ-23] | Obtener modo | script.js | `uO()`: lee el modo seleccionado. |
+| [XTZ-24] | UI por modo | script.js | `dMU()`: adapta la interfaz según el modo. |
+| [XTZ-25] | UI por método | script.js | `dMM()`: muestra/oculta opciones de César o Atbash. |
+| [XTZ-26] | Inicialización | script.js | `boot()`: configuración inicial de la aplicación. |
 
 **Consideraciones de seguridad:** César y Atbash no proporcionan seguridad criptográfica moderna. Una aplicación web cliente-side no puede ocultar su código fuente; cualquier usuario puede inspeccionar el JavaScript del navegador. Los identificadores XTZ son documentación técnica, no un mecanismo criptográfico. No existen contraseñas, API keys ni credenciales en el proyecto.
 
@@ -240,7 +240,7 @@ El código fuente de script.js utiliza identificadores breves [XTZ-XX] que permi
 
 **Repositorio:** https://github.com/EdsonLeonardoSM/Seguridad-Cripto
 
-El repositorio contiene los archivos del proyecto: index.html, styles.css, script.js y la documentación técnica en archivos .md separados.
+El repositorio contiene los archivos del proyecto: index.html, styles.css, script.js y este documento como documentación principal.
 
 **Aplicación web:** https://edsonleonardosm.github.io/Seguridad-Cripto/
 
@@ -262,19 +262,13 @@ El objetivo del proyecto fue cumplido: se implementaron ambos métodos, se permi
 
 ## 7. Bibliografía
 
-1. Al-Kindi, Abu Yusuf Ya'qub ibn Ishaq al-Sabbah. *Risāla fī Istikhrāj al-Muʿamma* (Manuscrito sobre la desciframiento de mensajes criptográficos). Siglo IX d.C. Baghdad.
+1. Kahn, David. *The Codebreakers: The Story of Secret Writing*. Macmillan Publishers, Nueva York, 1967. ISBN 978-0-671-65947-5. https://openlibrary.org/works/OL2543107W/The_codebreakers — Contexto histórico de los cifrados clásicos y de los orígenes del criptoanálisis (César, Atbash y el aporte de Al-Kindi).
 
-2. Kahn, David. *The Codebreakers: The Story of Secret Writing*. Macmillan Publishers, Nueva York, 1967. ISBN 978-0-671-65947-5.
+2. Singh, Simon. *The Code Book: The Science of Secrecy from Ancient Egypt to Quantum Cryptography*. Anchor Books, Nueva York, 1999. ISBN 978-0-385-49532-5. https://simonsingh.net/books/the-code-book/ — Explicación del análisis de frecuencia aplicado en el descifrado automático del proyecto.
 
-3. Singh, Simon. *The Code Book: The Science of Secrecy from Ancient Egypt to Quantum Cryptography*. Anchor Books, Nueva York, 1999. ISBN 978-0-385-49532-5.
+3. National Institute of Standards and Technology. *Advanced Encryption Standard (AES)*. FIPS PUB 197. U.S. Department of Commerce, 2001. https://doi.org/10.6028/NIST.FIPS.197 — Referencia del estándar moderno que se usa como contraste frente a los cifrados clásicos del proyecto.
 
-4. Alvarez, G.; Nunez, J.; Valenzuela, C. y otros. "A cryptanalysis of the classical cipher." *Journal of the American Society for Information Science and Technology*, vol. 58, no. 5, 2007, pp. 683-691.
-
-5. Schneier, Bruce. *Applied Cryptography: Protocols, Algorithms, and Source Code in C*. 2da edición. John Wiley & Sons, Nueva York, 1996. ISBN 978-0-471-11709-4.
-
-6. National Institute of Standards and Technology. *Advanced Encryption Standard (AES)*. FIPS PUB 197. U.S. Department of Commerce, 2001.
-
-7. Forristal, J. y Aggarwal, V. "A Survey of Cryptanalytic Methods for Classical Ciphers." *International Journal of Computer Science and Information Security*, vol. 9, no. 2, 2011.
+4. Real Academia Española. Banco de datos (CREA). *Corpus de referencia del español actual*. https://corpus.rae.es/lfrecuencias.html — Corpus de referencia para las frecuencias del español usadas como datos de trabajo en `script.js`.
 
 ---
 

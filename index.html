@@ -463,7 +463,7 @@
 
             // ============================================
             // Estado de procesamiento
-            // Solo refleja la ejecución real de processText()
+            // Solo refleja la ejecución real de x21()
             // y el resultado que script.js deposita en #outputText.
             // ============================================
             var processBtn = document.getElementById('processBtn');
@@ -506,7 +506,7 @@
                 var observer = new MutationObserver(function () {
                     // El propio processBtn handler actualiza el estado;
                     // aquí solo refrescamos la barra de estado del resultado
-                    // cuando cambia por copyResult() u otras causas.
+                    // cuando cambia por dCp() u otras causas.
                     var text = outputText.textContent || '';
                     if (text.indexOf('Error:') === 0) {
                         setStatus('error', 'Error');
